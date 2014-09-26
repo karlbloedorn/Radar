@@ -166,9 +166,9 @@ int process(int fd){
             continue;
         }
         // Checking if this chunk is compressed.
-        short isCompressed = 0;
-        if(header.compressedSignifier[0] == 'B' && header.compressedSignifier[1] == 'Z'){
-            isCompressed = 1;
+   
+        if(header.compressedSignifier[0] != 'B' && header.compressedSignifier[1] != 'Z'){
+          exit(200);
         }
 
         char * compressedContents = malloc(header.chunkSize);
