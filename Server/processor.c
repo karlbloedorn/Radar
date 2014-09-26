@@ -127,7 +127,7 @@ void refRecordLoad(RefRecord * record);
 void volRecordLoad(VolRecord * record);
 
 
-char *socket_path;
+char *socket_path = "\0radar-processor";;
 int process(int fd){
     char * uncompressedFile = malloc(1);
     size_t sum = 0;
@@ -421,8 +421,6 @@ int main(int argc, char *argv[]) {
 
   if (argc > 1) {
     socket_path = argv[1];
-  } else {
-    exit(255);
   }
 
   if ( (fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
