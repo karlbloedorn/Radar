@@ -1,22 +1,25 @@
 //
-//  main.c
+//  processor.c
 //  RadarProcessor
 //
-//  Created by Karl Bloedorn on 9/23/14.
-//  Copyright (c) 2014 Karl Bloedorn. All rights reserved.
+//  Created by Karl Bloedorn and Peter Irish on 9/23/14.
+//  Copyright (c) 2014 Karl Bloedorn and Peter Irish. All rights reserved.
 //
 
-#include <stdio.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <fcntl.h>
-#include "bzlib.h"
-#include <unistd.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdint.h>
 #include <math.h>
 #include <netinet/in.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/un.h>
+#include <unistd.h>
+
+#include "bzlib.h"
 
 #define RADIUS_OF_EARTH 6371000.0
 
@@ -123,31 +126,32 @@ void dataBlockHeaderLoad(DataBlockHeader * header);
 void refRecordLoad(RefRecord * record);
 void volRecordLoad(VolRecord * record);
 
-int main(int argc, const char * argv[]){
-    int fd = 0;
+
+char *socket_path;
+int process(int fd){
     char * uncompressedFile = malloc(1);
     size_t sum = 0;
-    
+
     char fileheader[24];
     int bytesRead0 = 0;
     while(bytesRead0 < 24){
         int bytes = read(fd, fileheader + bytesRead0 , 24 - bytesRead0);
-        if(bytes < 0){
+        if(bytes <= 0){
             exit(1);
         }
         bytesRead0 += bytes;
     }
-    
+
     short last = 0;
     int chunkIndex = 0;
-    
+
     while(!last){
         ChunkHeader header;
-        
+
         int bytesRead1 = 0;
         while(bytesRead1 < sizeof(ChunkHeader)){
             int bytes = read(fd, ((char*)&header)+ bytesRead1 , sizeof(ChunkHeader) - bytesRead1);
-            if(bytes < 0){
+            if(bytes <= 0){
                 exit(1);
             }
             bytesRead1 += bytes;
@@ -166,33 +170,33 @@ int main(int argc, const char * argv[]){
         if(header.compressedSignifier[0] == 'B' && header.compressedSignifier[1] == 'Z'){
             isCompressed = 1;
         }
-        
+
         char * compressedContents = malloc(header.chunkSize);
         compressedContents[0] = 'B';
         compressedContents[1] = 'Z';
-        
+
         int chunkRealSize = header.chunkSize-2;
         int bytesRead2 = 0;
         while(bytesRead2 < chunkRealSize){
             int bytes = read(fd, 2+ compressedContents + bytesRead2, chunkRealSize-bytesRead2);
-            if(bytes < 1){
+            if(bytes <= 0){
                 exit(1);
             }
             bytesRead2 += bytes;
         }
 
         //printf("pointer : %p length: %i isCompressed %i\n", header->compressedSignifier, header->chunkSize, isCompressed);
-        
+
         char * uncompressedPointer;
         size_t uncompressedSize;
         decompressChunk(compressedContents, header.chunkSize, &uncompressedSize, &uncompressedPointer);
-        
+
         size_t newSize = sum + uncompressedSize;
         uncompressedFile = realloc(uncompressedFile, newSize);
         memcpy(uncompressedFile + sum, uncompressedPointer, uncompressedSize);
         free(uncompressedPointer);
         sum = newSize;
-        
+
         chunkIndex++;
     }
     int record = 0;
@@ -203,10 +207,10 @@ int main(int argc, const char * argv[]){
     GateInfo * gates = malloc(1);
     int gateCount = 0;
     int gateAllocated = 0;
-    
+
     int numBuckets = 9;
     ScaleBucket buckets[numBuckets ];
-    
+
     int scaleValues[9][7] = {
         {80, 128, 128, 128, 0,     0,   0},
         {70, 255, 255, 255, 0,     0,   0},
@@ -225,9 +229,9 @@ int main(int argc, const char * argv[]){
         }
     }
     buckets[0].dbz = 80;
-    
+
     while (1){
-        long offset = record * 2432  + message_offset31;
+        unsigned long offset = record * 2432  + message_offset31;
         record++;
         if (offset >= sum){
             break;
@@ -236,15 +240,15 @@ int main(int argc, const char * argv[]){
         MessageHeader * messageHead = ( (MessageHeader *) messageHeaderOffset);
         messageHeaderLoad(messageHead);
         //NSLog(@"header message size: %i type: %i",header->messageSize, header->messageType);
-        
+
         if (messageHead->messageType == 31){
             message_offset31 += (messageHead->messageSize * 2 + 12 - 2432);
-            
+
             char * scanHeaderOffset = messageHeaderOffset + sizeof(MessageHeader);
-            
+
             ScanHeader * scan = ((ScanHeader *) scanHeaderOffset);
             scanHeaderLoad(scan);
-            
+
             if (scan->ars != 1){
                 //not HI res.
                 continue;
@@ -253,9 +257,9 @@ int main(int argc, const char * argv[]){
                 continue;
             }
             azimuths[scan->azimuthNumber] = scan->azimuthAngle;
-            
+
             //NSLog(@"%c%c%c%c found HI res data with elevation 1 ars 1 azimuth: %f",scan->identifier[0],scan->identifier[1], scan->identifier[2],scan->identifier[3],  scan->azimuthAngle);
-            
+
             for (int i = 0; i < 9; i++){
                 int dataPointer = scan->datapointers[i];
                 if(dataPointer > 0){
@@ -267,7 +271,7 @@ int main(int argc, const char * argv[]){
                         RefRecord * ref = (RefRecord *) refRecordOffset;
                         refRecordLoad(ref);
                         uint8_t * gateOffset = (uint8_t *) (refRecordOffset + sizeof(RefRecord));
-                        
+
                         int firstIndex = 0;
                         float firstVal = gateOffset[0];
                         for(int k = 1; k < ref->numGates; k++){  //0 without optimization
@@ -297,7 +301,7 @@ int main(int argc, const char * argv[]){
                                 firstIndex = k;
                                 firstVal = curVal;
                             }
-                            
+
                         }
                     } else if (strncmp(dataBlock->tname, "VOL", 3) == 0 && siteLatitude == 999){
                         char * volRecordOffset = dataBlockHeaderOffset + sizeof(DataBlockHeader);
@@ -314,12 +318,12 @@ int main(int argc, const char * argv[]){
     char * outputPointer = malloc(outputLength);
     GateCoordinates * gateCoordinatesPointer = (GateCoordinates *)outputPointer;
     GateColors * gateColorsPointer = (GateColors *) (outputPointer + sizeof(GateCoordinates) *gateCount);
-    
+
     //GateData * vertexArray = malloc(sizeof(GateData) * gateCount);
-    
+
     for (int i = 0; i < gateCount; i++) {
         GateInfo gate = gates[i];
-        
+
         GateCoordinates * curgateCoordinates = gateCoordinatesPointer + i;
         GateColors * curgateColors = gateColorsPointer + i;
 
@@ -327,7 +331,7 @@ int main(int argc, const char * argv[]){
         if(azimuthNumberAfter == 721){
             azimuthNumberAfter = 1;
         }
-        
+
         float azimuth = azimuths[gate.azimuthNumber];
         float azimuthAfter = azimuths[azimuthNumberAfter];
     //    GateData * gateData = vertexArray + i;
@@ -351,7 +355,7 @@ int main(int argc, const char * argv[]){
         projectLatitudeMercator(bottomLeft.y, &curgateCoordinates->positions[4].y);
         projectLongitudeMercator(topLeft.x, &curgateCoordinates->positions[5].x);
         projectLatitudeMercator(topLeft.y, &curgateCoordinates->positions[5].y);
-        
+
         int bucket = -1;
         for(int j = 0; j < numBuckets; j++){
             if( gate.reflectivity > buckets[j].dbz )
@@ -364,7 +368,7 @@ int main(int argc, const char * argv[]){
         gateColor[0] = 0;
         gateColor[1] = 0;
         gateColor[2] = 0;
-        
+
         switch (bucket)
         {
             case 0:
@@ -390,11 +394,11 @@ int main(int argc, const char * argv[]){
                 gateColor[0] = (percentForHighColor * highColor[0] + percentForLowColor * lowColor[0]);
                 gateColor[1] = (percentForHighColor * highColor[1] + percentForLowColor * lowColor[1]);
                 gateColor[2] = (percentForHighColor * highColor[2] + percentForLowColor * lowColor[2]);
-                
+
                 break;
             }
         }
-        
+
         for (int z = 0; z< 6; z++) {
             curgateColors->colors[z].r = gateColor[0];
             curgateColors->colors[z].g = gateColor[1];
@@ -410,9 +414,63 @@ int main(int argc, const char * argv[]){
     return 0;
 }
 
+
+int main(int argc, char *argv[]) {
+  struct sockaddr_un addr;
+  int fd,cl;
+
+  if (argc > 1) {
+    socket_path = argv[1];
+  } else {
+    exit(255);
+  }
+
+  if ( (fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
+    perror("socket error");
+    exit(-1);
+  }
+
+  memset(&addr, 0, sizeof(addr));
+  addr.sun_family = AF_UNIX;
+  strncpy(addr.sun_path, socket_path, sizeof(addr.sun_path)-1);
+
+  unlink(socket_path);
+
+  if (bind(fd, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
+    perror("bind error");
+    exit(-1);
+  }
+
+  if (listen(fd, 5) == -1) {
+    perror("listen error");
+    exit(-1);
+  }
+
+  pid_t  pid;
+
+  for(int i = 0; i < 10; i++) {
+    pid = fork();
+    if (pid == 0) {
+      break;
+    }
+  }
+
+
+  while (1) {
+    if ( (cl = accept(fd, NULL, NULL)) == -1) {
+      perror("accept error");
+      continue;
+    }
+    process(cl);
+    close(cl);
+  }
+  return 0;
+}
+
+
 void moveWithBearing(float originLatitude, float originLongitude, float distanceMeters, float bearingDegrees, float * outLatitude, float * outLongitude){
     float bearing = bearingDegrees * M_PI/180.0;
-    
+
     const double distRadians = distanceMeters / (RADIUS_OF_EARTH);
     float lat1 = originLatitude * M_PI / 180;
     float lon1 = originLongitude * M_PI / 180;
@@ -426,10 +484,10 @@ void moveWithBearing(float originLatitude, float originLongitude, float distance
 void projectLatitudeMercator( double latitude, float * projectedLatitude){
     const int mapWidth = 360;
     const int mapHeight = 180;
-    
+
     // convert from degrees to radians
     float latRad = latitude * M_PI / 180;
-    
+
     // get y value
     float mercN = log(tan((M_PI / 4) + (latRad / 2)));
     *projectedLatitude = (mapHeight / 2) - (mapWidth * mercN / (2 * M_PI));
@@ -438,7 +496,7 @@ void projectLatitudeMercator( double latitude, float * projectedLatitude){
 void projectLongitudeMercator( double longitude, float * projectedLongitude){
     const int mapWidth = 360;
     //const int mapHeight = 180;
-    
+
     // get x value
     *projectedLongitude = (longitude + 180) * (mapWidth / 360.0);
 }
@@ -452,7 +510,7 @@ void decompressChunk(char * input, size_t inputLength, size_t * uncompressedSize
     stream.next_out = base;
     stream.avail_out = BLOCK_SIZE;
     BZ2_bzDecompressInit(&stream, 0, 0); // == BZ_OK;
-    
+
     size_t uncompressed_size = 0;
     int status = BZ_STREAM_END;
     while((status = BZ2_bzDecompress(&stream)) == BZ_OK) {
@@ -462,10 +520,10 @@ void decompressChunk(char * input, size_t inputLength, size_t * uncompressedSize
         stream.avail_out = BLOCK_SIZE;
     }
     uncompressed_size += BLOCK_SIZE - stream.avail_out;
-    
+
     base = realloc(base, uncompressed_size);
     BZ2_bzDecompressEnd(&stream); // == BZ_OK;
-    
+
     *uncompressedSizeOut = uncompressed_size;
     *resultOut = base;
 }
@@ -493,7 +551,7 @@ void scanHeaderLoad(ScanHeader * header){
 }
 
 void dataBlockHeaderLoad(DataBlockHeader * header){
-    
+
 }
 
 void refRecordLoad(RefRecord * record){
@@ -508,7 +566,3 @@ void volRecordLoad(VolRecord * record){
     record->latitude = ntohf(record->latitude);
     record->longitude = ntohf(record->longitude);
 }
-
-
-
-
