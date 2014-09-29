@@ -40,4 +40,5 @@ dependencies {
     compile files('libs/shapefilereader-1.0.jar')
     compile files('libs/guava-18.0.jar')
     compile 'com.crashlytics.android:crashlytics:1.+'
+    compile 'com.joanzapata.android:android-iconify:1.0.6'
 }

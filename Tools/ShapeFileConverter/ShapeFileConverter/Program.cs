@@ -13,9 +13,8 @@ namespace ShapeFileConverter
   {
     static void Main(string[] args)
     {
-      Process("C:/Users/Karl/Documents/GitHub/Radar/Assets/Overlays/source/test_states_lines.shp");
+      Process("C:/Users/Karl/Downloads/in15oc03/in101503.shp");
     }
-
     static void Process(string filename)
     {
       int floatsSent = 0;
@@ -26,45 +25,27 @@ namespace ShapeFileConverter
       {
         foreach (var part in shape.Parts)
         {
-          lineCount += part.Segments.Count() * 2;         
+          lineCount += part.Segments.Count();
         }
       }
-
       var fileStream = File.Create(filename + ".wrlineoverlay");
-
       EndianBinaryWriter endianBinaryWriter = new EndianBinaryWriter(fileStream, Encoding.ASCII, true);
-      //UInt32 lineCount32Bit = (UInt32)lineCount;
       endianBinaryWriter.Write(lineCount);
       endianBinaryWriter.Flush();
-
       BinaryWriter binaryWriter = new BinaryWriter(fileStream);
-      int lineIndex = 0;
-
-      float[] vertexArray = new float[lineCount * 2 * 3]; //2 points in each line  3 dim:xyz
       foreach (var shape in shapes)
       {
         foreach (var part in shape.Parts)
         {
-          for (int i = 0; i < part.Segments.Count(); i++)
+          foreach(var s in part.Segments)
           {
-            Segment s = part.Segments.ElementAt(i);
             binaryWriter.Write(ConvertLongitude(s.P1.X));  //long1
             binaryWriter.Write(ConvertLatitude(s.P1.Y)); //lat1
             binaryWriter.Write(ConvertLongitude(s.P2.X)); //long2
             binaryWriter.Write(ConvertLatitude(s.P2.Y)); //lat2
             floatsSent += 4;
           }
-          /*
-            for (int i = 2; i < part.NumVertices; i++)
-            {
-              int baseIndex = (2 * part.StartIndex) + i * 2;
-              binaryWriter.Write(ConvertLongitude(fs.Vertex[baseIndex - 2]));  //long1
-              binaryWriter.Write(ConvertLatitude(fs.Vertex[baseIndex - 3])); //lat1
-              binaryWriter.Write(ConvertLongitude(fs.Vertex[baseIndex - 0])); //long2
-              binaryWriter.Write(ConvertLatitude(fs.Vertex[baseIndex - 1])); //lat2
-              lineIndex++;
-            }
-           */
+  
         }
       }
       binaryWriter.Flush();
