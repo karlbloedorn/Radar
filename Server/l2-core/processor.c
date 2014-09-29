@@ -127,7 +127,7 @@ void moveWithBearing(float originLatitude, float originLongitude,
                      float *outLatitude, float *outLongitude);
 void projectLatitudeMercator(double latitude, float *projectedLatitude);
 void projectLongitudeMercator(double longitude, float *projectedLongitude);
-radar_errors_t gzip_write(unsigned char *data, size_t data_len, int fd);
+radar_errors_t gzip_data(unsigned char *data, size_t data_len, size_t *compressedSize, unsigned char **compressedData);
 radar_errors_t decompressChunk(char *input, size_t inputLength,
                                size_t * uncompressedSizeOut,
                                char **resultOut);
@@ -515,6 +515,23 @@ invalid_error:
      return RADAR_INVALID_DATA;
 }
 
+static void setnonblocking(int sock)
+{
+     int opts;
+
+     opts = fcntl(sock,F_GETFL);
+     if (opts < 0) {
+          perror("fcntl(F_GETFL)");
+          exit(EXIT_FAILURE);
+     }
+     opts = opts & (~O_NONBLOCK);
+     if (fcntl(sock,F_SETFL,opts) < 0) {
+          perror("fcntl(F_SETFL)");
+          exit(EXIT_FAILURE);
+     }
+     return;
+}
+
 int main(int argc, char *argv[])
 {
      int fd, cl;
@@ -536,7 +553,11 @@ int main(int argc, char *argv[])
      while (1) {
           if(!stdin_mode) {
                if ((cl = accept(fd, NULL, NULL)) == -1) {
-                    perror("accept error");
+                    if(errno == EAGAIN || errno == EWOULDBLOCK) {
+                         setnonblocking(fd);
+                    } else {
+                         perror("Accept error");
+                    }
                     continue;
                }
           } else {
@@ -547,12 +568,18 @@ int main(int argc, char *argv[])
           size_t output_len = 0;
           process_status = process(cl, &output, &output_len);
           if(process_status == RADAR_OK) {
+               unsigned char *compressedData = NULL;
+               size_t compressSize = 0;
                if(stdin_mode) {
-                    gzip_write((unsigned char *)output, output_len, STDOUT_FILENO);
+                    gzip_data((unsigned char *)output, output_len, &compressSize, &compressedData);
+                    free(output);
+                    write(STDOUT_FILENO, compressedData, compressSize);
                } else {
-                    gzip_write((unsigned char *)output, output_len, cl);
+                    gzip_data((unsigned char *)output, output_len, &compressSize, &compressedData);
+                    free(output);
+                    write(cl, compressedData, compressSize);
                }
-               free(output);
+               free(compressedData);
           } else {
           }
           close(cl);
@@ -687,9 +714,11 @@ radar_errors_t strm_init(z_stream * strm, int level)
                            Z_DEFAULT_STRATEGY));
 }
 
-radar_errors_t gzip_write(unsigned char *data, size_t data_len, int fd)
+radar_errors_t gzip_data(unsigned char *data, size_t data_len, size_t *compressedSize, unsigned char **compressedData)
 {
-    unsigned char out[GZIP_CHUNK];
+    unsigned char *out = malloc(GZIP_CHUNK);
+    size_t offset = 0;
+    size_t memory_size = GZIP_CHUNK;
     z_stream strm;
     strm_init(&strm, 8);
     strm.next_in = (unsigned char *)data;
@@ -697,13 +726,18 @@ radar_errors_t gzip_write(unsigned char *data, size_t data_len, int fd)
     do {
         int have;
         strm.avail_out = GZIP_CHUNK;
-        strm.next_out = out;
+        strm.next_out = out + offset;
         CALL_ZLIB(deflate(&strm, Z_FINISH));
         have = GZIP_CHUNK - strm.avail_out;
-        write(fd, out, have);
+        offset += have;
+        memory_size += GZIP_CHUNK;
+        out = realloc(out, memory_size);
     }
     while (strm.avail_out == 0);
     deflateEnd (&strm);
+    out = realloc(out, offset);
+    *compressedData = out;
+    *compressedSize = offset;
     return RADAR_OK;
 }
 
