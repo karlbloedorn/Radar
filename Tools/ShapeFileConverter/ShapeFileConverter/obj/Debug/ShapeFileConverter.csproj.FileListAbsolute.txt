@@ -14,3 +14,19 @@ c:\users\karl\documents\visual studio 2013\Projects\ShapeFileConverter\ShapeFile
 c:\users\karl\documents\visual studio 2013\Projects\ShapeFileConverter\ShapeFileConverter\bin\Debug\DotSpatial.Topology.xml
 c:\users\karl\documents\visual studio 2013\Projects\ShapeFileConverter\ShapeFileConverter\obj\Debug\ShapeFileConverter.exe
 c:\users\karl\documents\visual studio 2013\Projects\ShapeFileConverter\ShapeFileConverter\obj\Debug\ShapeFileConverter.pdb
+C:\Users\Karl\Documents\GitHub\Radar\Tools\ShapeFileConverter\ShapeFileConverter\bin\Debug\ShapeFileConverter.exe.config
+C:\Users\Karl\Documents\GitHub\Radar\Tools\ShapeFileConverter\ShapeFileConverter\obj\Debug\ShapeFileConverter.exe
+C:\Users\Karl\Documents\GitHub\Radar\Tools\ShapeFileConverter\ShapeFileConverter\obj\Debug\ShapeFileConverter.pdb
+C:\Users\Karl\Documents\GitHub\Radar\Tools\ShapeFileConverter\ShapeFileConverter\bin\Debug\ShapeFileConverter.exe
+C:\Users\Karl\Documents\GitHub\Radar\Tools\ShapeFileConverter\ShapeFileConverter\bin\Debug\ShapeFileConverter.pdb
+C:\Users\Karl\Documents\GitHub\Radar\Tools\ShapeFileConverter\ShapeFileConverter\bin\Debug\DotSpatial.Data.dll
+C:\Users\Karl\Documents\GitHub\Radar\Tools\ShapeFileConverter\ShapeFileConverter\bin\Debug\DotSpatial.Mono.dll
+C:\Users\Karl\Documents\GitHub\Radar\Tools\ShapeFileConverter\ShapeFileConverter\bin\Debug\DotSpatial.Projections.dll
+C:\Users\Karl\Documents\GitHub\Radar\Tools\ShapeFileConverter\ShapeFileConverter\bin\Debug\DotSpatial.Serialization.dll
+C:\Users\Karl\Documents\GitHub\Radar\Tools\ShapeFileConverter\ShapeFileConverter\bin\Debug\DotSpatial.Topology.dll
+C:\Users\Karl\Documents\GitHub\Radar\Tools\ShapeFileConverter\ShapeFileConverter\bin\Debug\DotSpatial.Data.xml
+C:\Users\Karl\Documents\GitHub\Radar\Tools\ShapeFileConverter\ShapeFileConverter\bin\Debug\DotSpatial.Mono.xml
+C:\Users\Karl\Documents\GitHub\Radar\Tools\ShapeFileConverter\ShapeFileConverter\bin\Debug\DotSpatial.Projections.xml
+C:\Users\Karl\Documents\GitHub\Radar\Tools\ShapeFileConverter\ShapeFileConverter\bin\Debug\DotSpatial.Serialization.xml
+C:\Users\Karl\Documents\GitHub\Radar\Tools\ShapeFileConverter\ShapeFileConverter\bin\Debug\DotSpatial.Topology.xml
+C:\Users\Karl\Documents\GitHub\Radar\Tools\ShapeFileConverter\ShapeFileConverter\obj\Debug\ShapeFileConverter.csprojResolveAssemblyReference.cache

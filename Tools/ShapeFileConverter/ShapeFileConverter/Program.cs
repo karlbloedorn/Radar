@@ -13,7 +13,8 @@ namespace ShapeFileConverter
   {
     static void Main(string[] args)
     {
-      Process("C:/Users/Karl/Downloads/cb_2013_us_state_5m/cb_2013_us_state_5m.shp");
+      Process(".shp");
+
     }
 
     static void Process(string filename)
