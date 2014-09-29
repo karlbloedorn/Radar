@@ -20,7 +20,9 @@
 #include <errno.h>
 #include <err.h>
 #include <unistd.h>
-#include "bzlib.h"
+
+#include <bzlib.h>
+#include <zlib.h>
 
 #define RADIUS_OF_EARTH 6371000.0
 #define NUMBUCKETS 9
@@ -125,6 +127,7 @@ void moveWithBearing(float originLatitude, float originLongitude,
                      float *outLatitude, float *outLongitude);
 void projectLatitudeMercator(double latitude, float *projectedLatitude);
 void projectLongitudeMercator(double longitude, float *projectedLongitude);
+radar_errors_t gzip_write(unsigned char *data, size_t data_len, int fd);
 radar_errors_t decompressChunk(char *input, size_t inputLength,
                                size_t * uncompressedSizeOut,
                                char **resultOut);
@@ -545,9 +548,9 @@ int main(int argc, char *argv[])
           process_status = process(cl, &output, &output_len);
           if(process_status == RADAR_OK) {
                if(stdin_mode) {
-                    write(STDOUT_FILENO, output, output_len);
+                    gzip_write((unsigned char *)output, output_len, STDOUT_FILENO);
                } else {
-                    write(cl, output, output_len);
+                    gzip_write((unsigned char *)output, output_len, cl);
                }
                free(output);
           } else {
@@ -657,6 +660,53 @@ radar_errors_t decompressChunk(char *input, size_t inputLength,
      *resultOut = base;
      return RADAR_OK;
 }
+
+#define GZIP_CHUNK 4096
+
+#define CALL_ZLIB(x) {                                                  \
+        int status;                                                     \
+        status = x;                                                     \
+        if (status < 0) {                                               \
+             return RADAR_INVALID_DATA;                                 \
+        }                                                               \
+    }
+
+/* These are parameters to deflateInit2. See
+   http://zlib.net/manual.html. */
+
+#define windowBits 15
+#define GZIP_ENCODING 16
+
+radar_errors_t strm_init(z_stream * strm, int level)
+{
+    strm->zalloc = Z_NULL;
+    strm->zfree  = Z_NULL;
+    strm->opaque = Z_NULL;
+    CALL_ZLIB(deflateInit2(strm, level, Z_DEFLATED,
+                           windowBits | GZIP_ENCODING, 8,
+                           Z_DEFAULT_STRATEGY));
+}
+
+radar_errors_t gzip_write(unsigned char *data, size_t data_len, int fd)
+{
+    unsigned char out[GZIP_CHUNK];
+    z_stream strm;
+    strm_init(&strm, 8);
+    strm.next_in = (unsigned char *)data;
+    strm.avail_in = data_len;
+    do {
+        int have;
+        strm.avail_out = GZIP_CHUNK;
+        strm.next_out = out;
+        CALL_ZLIB(deflate(&strm, Z_FINISH));
+        have = GZIP_CHUNK - strm.avail_out;
+        write(fd, out, have);
+    }
+    while (strm.avail_out == 0);
+    deflateEnd (&strm);
+    return RADAR_OK;
+}
+
 
 float ntohf(float input)
 {
