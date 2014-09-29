@@ -13,12 +13,12 @@ namespace ShapeFileConverter
   {
     static void Main(string[] args)
     {
-      Process(".shp");
-
+      Process("C:/Users/Karl/Documents/GitHub/Radar/Assets/Overlays/source/test_states_lines.shp");
     }
 
     static void Process(string filename)
     {
+      int floatsSent = 0;
       int lineCount = 0;
       IFeatureSet fs = FeatureSet.Open(filename);
       var shapes = fs.ShapeIndices.ToList();
@@ -26,31 +26,48 @@ namespace ShapeFileConverter
       {
         foreach (var part in shape.Parts)
         {
-          lineCount += (part.NumVertices - 1);
+          lineCount += part.Segments.Count() * 2;         
         }
       }
 
       var fileStream = File.Create(filename + ".wrlineoverlay");
-      var endianBinaryWriter = new EndianBinaryWriter(fileStream);
 
+      EndianBinaryWriter endianBinaryWriter = new EndianBinaryWriter(fileStream, Encoding.ASCII, true);
+      //UInt32 lineCount32Bit = (UInt32)lineCount;
       endianBinaryWriter.Write(lineCount);
+      endianBinaryWriter.Flush();
+
+      BinaryWriter binaryWriter = new BinaryWriter(fileStream);
+      int lineIndex = 0;
 
       float[] vertexArray = new float[lineCount * 2 * 3]; //2 points in each line  3 dim:xyz
       foreach (var shape in shapes)
       {
         foreach (var part in shape.Parts)
         {
-          for (int i = 2; i < part.NumVertices; i++)
+          for (int i = 0; i < part.Segments.Count(); i++)
           {
-            int baseIndex = (2 * part.StartIndex) + i * 2;
-            endianBinaryWriter.Write( ConvertLongitude(fs.Vertex[baseIndex - 2]));  //long1
-            endianBinaryWriter.Write(ConvertLatitude(fs.Vertex[baseIndex - 3])); //lat1
-            endianBinaryWriter.Write(ConvertLongitude(fs.Vertex[baseIndex - 0])); //long2
-            endianBinaryWriter.Write(ConvertLatitude(fs.Vertex[baseIndex - 1])); //lat2
+            Segment s = part.Segments.ElementAt(i);
+            binaryWriter.Write(ConvertLongitude(s.P1.X));  //long1
+            binaryWriter.Write(ConvertLatitude(s.P1.Y)); //lat1
+            binaryWriter.Write(ConvertLongitude(s.P2.X)); //long2
+            binaryWriter.Write(ConvertLatitude(s.P2.Y)); //lat2
+            floatsSent += 4;
           }
+          /*
+            for (int i = 2; i < part.NumVertices; i++)
+            {
+              int baseIndex = (2 * part.StartIndex) + i * 2;
+              binaryWriter.Write(ConvertLongitude(fs.Vertex[baseIndex - 2]));  //long1
+              binaryWriter.Write(ConvertLatitude(fs.Vertex[baseIndex - 3])); //lat1
+              binaryWriter.Write(ConvertLongitude(fs.Vertex[baseIndex - 0])); //long2
+              binaryWriter.Write(ConvertLatitude(fs.Vertex[baseIndex - 1])); //lat2
+              lineIndex++;
+            }
+           */
         }
       }
-      endianBinaryWriter.Flush();
+      binaryWriter.Flush();
       fileStream.Close();
     }
 
