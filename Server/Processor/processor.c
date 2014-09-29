@@ -501,10 +501,7 @@ radar_errors_t process(int fd, char **output, size_t *output_length)
 
      free(gates);
      free(uncompressedFile);
-     float *outputFloats = (float *)outputPointer;
-     for(int i = 0; i < 12 * gateCount; i++) {
-          outputFloats[i] = htonf(outputFloats[i]);
-     }
+
      *output_length = outputLength;
      *output = outputPointer;
      return RADAR_OK;
