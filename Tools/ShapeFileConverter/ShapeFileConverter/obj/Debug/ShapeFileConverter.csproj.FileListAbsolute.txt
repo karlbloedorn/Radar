@@ -1,0 +1,16 @@
+c:\users\karl\documents\visual studio 2013\Projects\ShapeFileConverter\ShapeFileConverter\bin\Debug\ShapeFileConverter.exe.config
+c:\users\karl\documents\visual studio 2013\Projects\ShapeFileConverter\ShapeFileConverter\obj\Debug\ShapeFileConverter.csprojResolveAssemblyReference.cache
+c:\users\karl\documents\visual studio 2013\Projects\ShapeFileConverter\ShapeFileConverter\bin\Debug\ShapeFileConverter.exe
+c:\users\karl\documents\visual studio 2013\Projects\ShapeFileConverter\ShapeFileConverter\bin\Debug\ShapeFileConverter.pdb
+c:\users\karl\documents\visual studio 2013\Projects\ShapeFileConverter\ShapeFileConverter\bin\Debug\DotSpatial.Data.dll
+c:\users\karl\documents\visual studio 2013\Projects\ShapeFileConverter\ShapeFileConverter\bin\Debug\DotSpatial.Mono.dll
+c:\users\karl\documents\visual studio 2013\Projects\ShapeFileConverter\ShapeFileConverter\bin\Debug\DotSpatial.Projections.dll
+c:\users\karl\documents\visual studio 2013\Projects\ShapeFileConverter\ShapeFileConverter\bin\Debug\DotSpatial.Serialization.dll
+c:\users\karl\documents\visual studio 2013\Projects\ShapeFileConverter\ShapeFileConverter\bin\Debug\DotSpatial.Topology.dll
+c:\users\karl\documents\visual studio 2013\Projects\ShapeFileConverter\ShapeFileConverter\bin\Debug\DotSpatial.Data.xml
+c:\users\karl\documents\visual studio 2013\Projects\ShapeFileConverter\ShapeFileConverter\bin\Debug\DotSpatial.Mono.xml
+c:\users\karl\documents\visual studio 2013\Projects\ShapeFileConverter\ShapeFileConverter\bin\Debug\DotSpatial.Projections.xml
+c:\users\karl\documents\visual studio 2013\Projects\ShapeFileConverter\ShapeFileConverter\bin\Debug\DotSpatial.Serialization.xml
+c:\users\karl\documents\visual studio 2013\Projects\ShapeFileConverter\ShapeFileConverter\bin\Debug\DotSpatial.Topology.xml
+c:\users\karl\documents\visual studio 2013\Projects\ShapeFileConverter\ShapeFileConverter\obj\Debug\ShapeFileConverter.exe
+c:\users\karl\documents\visual studio 2013\Projects\ShapeFileConverter\ShapeFileConverter\obj\Debug\ShapeFileConverter.pdb
