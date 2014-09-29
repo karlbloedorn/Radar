@@ -27,8 +27,10 @@ public class RadarSurface extends GLSurfaceView {
     private void init(Context context) {
         setEGLContextClientVersion(2);
         renderer = new RadarRenderer();
-        renderer.overlays.add(new LineOverlay(context.getResources().openRawResource(R.raw.overlay_states_9), "States"));
-        //renderer.overlays.add(new LineOverlay(context.getResources().openRawResource(R.raw.overlay_county), "Counties"));
+        renderer.overlays.add(new LineOverlay(context.getResources().openRawResource(R.raw.state_lines), "States"));
+        renderer.overlays.add(new LineOverlay(context.getResources().openRawResource(R.raw.county_lines), "Counties"));
+        renderer.overlays.add(new LineOverlay(context.getResources().openRawResource(R.raw.interstate_lines), "Interstates"));
+
         //renderer.overlays.add(new LineOverlay(context.getResources().openRawResource(R.raw.overlay_interstates), "Interstates"));
         panDetector = new GestureDetector(context,new PanListener());
         scaleDetector = new ScaleGestureDetector(context,new ScaleListener());
