@@ -16,6 +16,8 @@ public class LineOverlay {
     public String description = "";
     public int lineCount;
     private ByteBuffer myBuffer;
+    public boolean render = true;
+    public boolean setup = false;
 
     public LineOverlay(InputStream filestream, String description){
         this.description = description;
@@ -40,6 +42,7 @@ public class LineOverlay {
     }
     public void Setup()
     {
+        setup = true;
        myBuffer.position(0);
        GLES20.glGenBuffers(1, vbos, 0);
        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbos[0]);
@@ -47,11 +50,13 @@ public class LineOverlay {
     }
     public void Draw(int program)
     {
-        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbos[0]);
-        int positionHandle = GLES20.glGetAttribLocation(program, "position");
-        GLES20.glVertexAttribPointer(positionHandle, 2, GLES20.GL_FLOAT, false, 0, 0);
-        GLES20.glEnableVertexAttribArray(positionHandle);
-        GLES20.glDrawArrays(GLES20.GL_LINES, 0, this.lineCount* 2);
+        if(render){
+            GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbos[0]);
+            int positionHandle = GLES20.glGetAttribLocation(program, "position");
+            GLES20.glVertexAttribPointer(positionHandle, 2, GLES20.GL_FLOAT, false, 0, 0);
+            GLES20.glEnableVertexAttribArray(positionHandle);
+            GLES20.glDrawArrays(GLES20.GL_LINES, 0, this.lineCount* 2);
+        }
     }
 }
 

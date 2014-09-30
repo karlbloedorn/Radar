@@ -11,6 +11,7 @@ import android.view.ScaleGestureDetector;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 
 import com.google.common.io.CharStreams;
 
@@ -19,6 +20,8 @@ public class RadarSurface extends GLSurfaceView {
     private ScaleGestureDetector scaleDetector;
     private GestureDetector panDetector;
     private RadarRenderer renderer;
+    public ArrayList<LineOverlay> overlays = new ArrayList<LineOverlay>();
+
 
     float mapScale = 60;
     float centerMapY = 54;
@@ -27,11 +30,8 @@ public class RadarSurface extends GLSurfaceView {
     private void init(Context context) {
         setEGLContextClientVersion(2);
         renderer = new RadarRenderer();
-        renderer.overlays.add(new LineOverlay(context.getResources().openRawResource(R.raw.state_lines), "States"));
-        renderer.overlays.add(new LineOverlay(context.getResources().openRawResource(R.raw.county_lines), "Counties"));
-        renderer.overlays.add(new LineOverlay(context.getResources().openRawResource(R.raw.interstate_lines), "Interstates"));
+        renderer.overlays = overlays;
 
-        //renderer.overlays.add(new LineOverlay(context.getResources().openRawResource(R.raw.overlay_interstates), "Interstates"));
         panDetector = new GestureDetector(context,new PanListener());
         scaleDetector = new ScaleGestureDetector(context,new ScaleListener());
 
