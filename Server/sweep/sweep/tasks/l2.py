@@ -5,7 +5,10 @@ import datetime
 import gevent
 import socket
 from celery import current_app
+from celery import chain
 from celery.utils.log import get_task_logger
+import boto
+import os
 
 logger = get_task_logger(__name__)
 
@@ -61,9 +64,11 @@ class RadarSites(object):
             callsigns = self.callsigns
         else:
             callsigns = self.callsigns & callsigns
+        results = {}
         for callsign in callsigns:
             url = self.base_url + callsign + '/' + self.list_file
-            fetch_dirlist.apply_async((url, callsign), link=process.s(callsign))
+            results[callsign] = chain(fetch_dirlist.s(url, callsign), process.s(callsign))()
+        return results
 
 class Radar(object):
     def __init__(self, callsign):
@@ -78,9 +83,16 @@ class Radar(object):
     def last_updated_set(self, value):
         pass
 
-    def process(self, product_url):
-        process_socket = gevent.socket.socket(family=socket.AF_UNIX)
-        process_socket.connect("/tmp/test.socket")
+    def process(self, product, product_url):
+        s3 = boto.s3.connect_to_region(region_name='us-west-2')
+        bucket = s3.get_bucket('a9g4c-l2')
+        key_name = '{}_{}.bin'.format(product.callsign, product.dt.isoformat())
+        path = product.callsign
+        full_key_name = os.path.join(path, key_name)
+        k = bucket.new_key(full_key_name)
+        k.metadata['Content-Encoding'] = 'gzip'
+
+        process_socket = gevent.socket.create_connection(("127.0.0.1", 6436))
         product_request = grequests.get(product_url).send(stream=True)
         for chunk in product_request.iter_content(chunk_size=1024 * 8):
             process_socket.sendall(chunk)
@@ -91,7 +103,10 @@ class Radar(object):
             if not chunk:
                 break
             radar_data += chunk
-        return len(radar_data)
+
+        logger.info("Processed file contents")
+        k.set_contents_from_string(radar_data)
+        return k.generate_url(1800)
 
     def fetch_dirlist(self, url):
         dir_list = grequests.get(url).send()
@@ -117,7 +132,11 @@ def process(target_product, callsign):
         radar = Radar(callsign)
         product = RadarProduct(target_product)
         url = product.url(mirror_base)
-        logger.info("Called process")
-        return radar.process(url)
+        return radar.process(product, url)
     else:
         logger.info("No new product, skipping!")
+
+if __name__ == "__main__":
+    mirror_base = "http://mesonet-nexrad.agron.iastate.edu/level2/raw/"
+    sites = RadarSites(mirror_base)
+    print sites.update(set(['KMPX']))['KMPX'].get()
