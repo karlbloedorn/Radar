@@ -2,25 +2,44 @@ package karlbloedorn.com.weatherradar;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
+import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.EditText;
+
 import com.crashlytics.android.Crashlytics;
 import com.joanzapata.android.iconify.IconDrawable;
 import com.joanzapata.android.iconify.Iconify;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Radar extends Activity {
+
+    private RadarSurface surfaceView;
+    private SharedPreferences preferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        preferences = getSharedPreferences("FilterLayers", Context.MODE_PRIVATE);
         super.onCreate(savedInstanceState);
         Crashlytics.start(this);
         setContentView(R.layout.activity_radar);
 
+        surfaceView = (RadarSurface) findViewById(R.id.radar_surface);
 
+        surfaceView.overlays.add(new LineOverlay(this.getResources().openRawResource(R.raw.state_lines), "States"));
+        surfaceView.overlays.add(new LineOverlay(this.getResources().openRawResource(R.raw.county_lines), "Counties"));
+        surfaceView.overlays.add(new LineOverlay(this.getResources().openRawResource(R.raw.interstate_lines), "Interstates"));
+
+        for(LineOverlay overlay : surfaceView.overlays){
+           overlay.render =  preferences.getBoolean(overlay.description, overlay.description == "Counties" ? false: true);
+        }
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -67,17 +86,28 @@ public class Radar extends Activity {
             }
         });
 
-        CharSequence[] items = {"States", "Counties", "Interstates"};
-        boolean[] shownArray = {true, false, true};
-        builder.setMultiChoiceItems(items,shownArray, new DialogInterface.OnMultiChoiceClickListener() {
+        List<CharSequence> items =  new ArrayList<CharSequence>();
+        boolean[] shownArray = new boolean[surfaceView.overlays.size()];
+
+        int index = 0;
+        for(LineOverlay lo : surfaceView.overlays){
+            items.add(lo.description);
+            shownArray[index] = lo.render;
+            index++;
+        }
+
+        builder.setMultiChoiceItems(
+                items.toArray(new CharSequence[items.size()]),
+                shownArray,
+                new DialogInterface.OnMultiChoiceClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int indexSelected,
                                 boolean isChecked) {
-                /*if (isChecked) {
-                    seletedItems.add(indexSelected);
-                } else if (seletedItems.contains(indexSelected)) {
-                    seletedItems.remove(Integer.valueOf(indexSelected));
-                }*/
+                LineOverlay cur = surfaceView.overlays.get(indexSelected);
+                cur.render = isChecked;
+                SharedPreferences.Editor editor = preferences.edit();
+                editor.putBoolean(cur.description, cur.render);
+                editor.commit();
             }
         });
         builder.show();

@@ -14,7 +14,7 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 public class RadarRenderer implements GLSurfaceView.Renderer {
-    public ArrayList<LineOverlay> overlays = new ArrayList<LineOverlay>();
+    public ArrayList<LineOverlay> overlays;
 
     private float[] viewMatrix = new float[16];
     private float[] projectionMatrix = new float[16];
@@ -40,10 +40,6 @@ public class RadarRenderer implements GLSurfaceView.Renderer {
        // colorHandle = GLES20.glGetAttribLocation(mProgram, "color");
         GLES20.glEnableVertexAttribArray(positionHandle);
         //GLES20.glEnableVertexAttribArray(colorHandle);
-
-        for(LineOverlay overlay : overlays){
-                overlay.Setup();
-        }
     }
     @Override
     public void onSurfaceChanged(GL10 unused, int width, int height) {
@@ -64,6 +60,9 @@ public class RadarRenderer implements GLSurfaceView.Renderer {
 
         //GLES20.glUniform4f();
         for(LineOverlay overlay : overlays){
+            if(!overlay.setup){
+                overlay.Setup();
+            }
             overlay.Draw(mProgram);
         }
 
