@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="6245" systemVersion="13F34" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="Gnv-CR-RMZ">
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="6238"/>
+    </dependencies>
+    <scenes>
+        <!--Radar-->
+        <scene sceneID="tne-QT-ifu">
+            <objects>
+                <viewController id="BYZ-38-t0r" customClass="RadarViewController" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="y3c-jy-aDJ"/>
+                        <viewControllerLayoutGuide type="bottom" id="wfy-db-euE"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
+                        <rect key="frame" x="0.0" y="0.0" width="600" height="536"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <glkView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" translatesAutoresizingMaskIntoConstraints="NO" id="fuV-b1-2Eq">
+                                <rect key="frame" x="0.0" y="0.0" width="600" height="536"/>
+                                <color key="backgroundColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
+                                <connections>
+                                    <outlet property="delegate" destination="BYZ-38-t0r" id="qU3-jv-n0x"/>
+                                </connections>
+                            </glkView>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="zAI-YX-nf4" customClass="GADBannerView">
+                                <rect key="frame" x="140" y="486" width="320" height="50"/>
+                                <color key="backgroundColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="320" id="fpb-Ui-A0w"/>
+                                    <constraint firstAttribute="height" constant="50" id="uCn-8t-dZj"/>
+                                </constraints>
+                            </view>
+                        </subviews>
+                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
+                        <constraints>
+                            <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="fuV-b1-2Eq" secondAttribute="bottom" id="Csh-Fv-vWB"/>
+                            <constraint firstAttribute="trailing" secondItem="fuV-b1-2Eq" secondAttribute="trailing" id="Dt6-kZ-H19"/>
+                            <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="zAI-YX-nf4" secondAttribute="bottom" id="ahR-KX-TgK"/>
+                            <constraint firstItem="fuV-b1-2Eq" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" id="fuV-P3-T5s"/>
+                            <constraint firstItem="fuV-b1-2Eq" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="nkO-Qo-eDI"/>
+                            <constraint firstAttribute="centerX" secondItem="zAI-YX-nf4" secondAttribute="centerX" id="wnF-QG-JaC"/>
+                        </constraints>
+                    </view>
+                    <extendedEdge key="edgesForExtendedLayout"/>
+                    <navigationItem key="navigationItem" title="Radar" id="URC-ex-hlS">
+                        <barButtonItem key="rightBarButtonItem" title="Item" id="6VW-Ay-MeT"/>
+                    </navigationItem>
+                    <connections>
+                        <outlet property="bannerView" destination="zAI-YX-nf4" id="R6d-YE-JWj"/>
+                        <outlet property="radarSurface" destination="fuV-b1-2Eq" id="4kj-6O-lIt"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="244" y="131"/>
+        </scene>
+        <!--Navigation Controller-->
+        <scene sceneID="ReU-4g-7OE">
+            <objects>
+                <navigationController id="Gnv-CR-RMZ" sceneMemberID="viewController">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="uys-jd-2qH">
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                    <connections>
+                        <segue destination="BYZ-38-t0r" kind="relationship" relationship="rootViewController" id="sJL-eA-m3J"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="DrC-jq-uya" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-417" y="137"/>
+        </scene>
+    </scenes>
+</document>
