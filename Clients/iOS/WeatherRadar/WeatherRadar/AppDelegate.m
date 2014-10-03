@@ -17,7 +17,25 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
+    
+    
+    [[UINavigationBar appearance] setTitleTextAttributes:[NSDictionary dictionaryWithObjectsAndKeys:[UIColor whiteColor], NSForegroundColorAttributeName, [UIFont fontWithName:@"HelveticaNeue-Light" size: 18], NSFontAttributeName, nil]];
+    [[UINavigationBar appearance] setTintColor:[UIColor colorWithWhite:1.0 alpha:1.0]];
+    
+    NSShadow *shadow = [[NSShadow alloc] init];
+    shadow.shadowColor = [UIColor blackColor];
+    shadow.shadowOffset = CGSizeMake(1, 0);
+    NSDictionary *titleAttributes = @{NSForegroundColorAttributeName: [UIColor whiteColor],
+                                      NSShadowAttributeName: shadow,
+                                      NSFontAttributeName: [UIFont fontWithName:@"HelveticaNeue-Light" size:18]};
+    [[UINavigationBar appearance] setTitleTextAttributes:titleAttributes];
+  
+      [[UINavigationBar appearance] setBarTintColor:[UIColor colorWithWhite:0.2 alpha:1.0]];
+
+    [UIApplication sharedApplication].statusBarStyle = UIStatusBarStyleLightContent;
     return YES;
+    
+
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application {
