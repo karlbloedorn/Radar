@@ -16,6 +16,15 @@
                         <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
+                            <glkView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" ambiguous="YES" misplaced="YES" enableSetNeedsDisplay="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fuV-b1-2Eq">
+                                <rect key="frame" x="0.0" y="44" width="600" height="556"/>
+                            </glkView>
+                            <navigationBar contentMode="scaleToFill" ambiguous="YES" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="HlK-Wz-hhk">
+                                <rect key="frame" x="0.0" y="0.0" width="600" height="44"/>
+                                <items>
+                                    <navigationItem title="Radar" id="KgY-c0-gms"/>
+                                </items>
+                            </navigationBar>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="zAI-YX-nf4" customClass="GADBannerView">
                                 <rect key="frame" x="140" y="550" width="320" height="50"/>
                                 <color key="backgroundColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
@@ -27,7 +36,11 @@
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                         <constraints>
+                            <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="fuV-b1-2Eq" secondAttribute="bottom" id="Csh-Fv-vWB"/>
+                            <constraint firstAttribute="trailing" secondItem="fuV-b1-2Eq" secondAttribute="trailing" id="Dt6-kZ-H19"/>
                             <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="zAI-YX-nf4" secondAttribute="bottom" id="ahR-KX-TgK"/>
+                            <constraint firstItem="fuV-b1-2Eq" firstAttribute="top" secondItem="HlK-Wz-hhk" secondAttribute="bottom" id="drN-qM-Uyb"/>
+                            <constraint firstItem="fuV-b1-2Eq" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="nkO-Qo-eDI"/>
                             <constraint firstAttribute="centerX" secondItem="zAI-YX-nf4" secondAttribute="centerX" id="wnF-QG-JaC"/>
                         </constraints>
                     </view>

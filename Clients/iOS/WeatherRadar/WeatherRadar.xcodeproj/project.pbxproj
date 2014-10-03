@@ -26,6 +26,8 @@
 		6EB33B4519DE3FEA00358C5E /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6EB33B4419DE3FEA00358C5E /* SystemConfiguration.framework */; };
 		6EB33B4919DE413400358C5E /* EventKitUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6EB33B4819DE413400358C5E /* EventKitUI.framework */; };
 		6EB33B4B19DE417E00358C5E /* EventKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6EB33B4619DE412E00358C5E /* EventKit.framework */; };
+		6EB33B4D19DE4E0900358C5E /* GLKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6EB33B4C19DE4E0900358C5E /* GLKit.framework */; };
+		6EB33B4F19DE4E0D00358C5E /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6EB33B4E19DE4E0D00358C5E /* OpenGLES.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -91,6 +93,8 @@
 		6EB33B4419DE3FEA00358C5E /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		6EB33B4619DE412E00358C5E /* EventKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = EventKit.framework; path = System/Library/Frameworks/EventKit.framework; sourceTree = SDKROOT; };
 		6EB33B4819DE413400358C5E /* EventKitUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = EventKitUI.framework; path = System/Library/Frameworks/EventKitUI.framework; sourceTree = SDKROOT; };
+		6EB33B4C19DE4E0900358C5E /* GLKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLKit.framework; path = System/Library/Frameworks/GLKit.framework; sourceTree = SDKROOT; };
+		6EB33B4E19DE4E0D00358C5E /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -98,6 +102,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6EB33B4F19DE4E0D00358C5E /* OpenGLES.framework in Frameworks */,
+				6EB33B4D19DE4E0900358C5E /* GLKit.framework in Frameworks */,
 				6EB33B4919DE413400358C5E /* EventKitUI.framework in Frameworks */,
 				6EB33B4B19DE417E00358C5E /* EventKit.framework in Frameworks */,
 				6EB33B4519DE3FEA00358C5E /* SystemConfiguration.framework in Frameworks */,
@@ -125,6 +131,8 @@
 		6EB33ADF19DE3E6B00358C5E = {
 			isa = PBXGroup;
 			children = (
+				6EB33B4E19DE4E0D00358C5E /* OpenGLES.framework */,
+				6EB33B4C19DE4E0900358C5E /* GLKit.framework */,
 				6EB33AEA19DE3E6B00358C5E /* WeatherRadar */,
 				6EB33B0419DE3E6C00358C5E /* WeatherRadarTests */,
 				6EB33AE919DE3E6B00358C5E /* Products */,
