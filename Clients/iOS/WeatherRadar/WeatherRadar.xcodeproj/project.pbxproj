@@ -30,7 +30,6 @@
 		6EB33B4F19DE4E0D00358C5E /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6EB33B4E19DE4E0D00358C5E /* OpenGLES.framework */; };
 		6EB33B5119DE74FF00358C5E /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6EB33B5019DE74FF00358C5E /* QuartzCore.framework */; };
 		6EB33B6119DE79D300358C5E /* county_lines.shp in Resources */ = {isa = PBXBuildFile; fileRef = 6EB33B5319DE79D300358C5E /* county_lines.shp */; };
-		6EB33B6219DE79D300358C5E /* fragmenta.glsl in Resources */ = {isa = PBXBuildFile; fileRef = 6EB33B5419DE79D300358C5E /* fragmenta.glsl */; };
 		6EB33B6319DE79D300358C5E /* 702-share-toolbar.png in Resources */ = {isa = PBXBuildFile; fileRef = 6EB33B5619DE79D300358C5E /* 702-share-toolbar.png */; };
 		6EB33B6419DE79D300358C5E /* 702-share-toolbar@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 6EB33B5719DE79D300358C5E /* 702-share-toolbar@2x.png */; };
 		6EB33B6519DE79D300358C5E /* 723-location-arrow-toolbar.png in Resources */ = {isa = PBXBuildFile; fileRef = 6EB33B5819DE79D300358C5E /* 723-location-arrow-toolbar.png */; };
@@ -41,7 +40,12 @@
 		6EB33B6A19DE79D300358C5E /* 832-stack-1-toolbar@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 6EB33B5D19DE79D300358C5E /* 832-stack-1-toolbar@2x.png */; };
 		6EB33B6B19DE79D300358C5E /* interstate_lines in Resources */ = {isa = PBXBuildFile; fileRef = 6EB33B5E19DE79D300358C5E /* interstate_lines */; };
 		6EB33B6C19DE79D300358C5E /* state_lines.shp in Resources */ = {isa = PBXBuildFile; fileRef = 6EB33B5F19DE79D300358C5E /* state_lines.shp */; };
-		6EB33B6D19DE79D300358C5E /* vertexa.glsl in Resources */ = {isa = PBXBuildFile; fileRef = 6EB33B6019DE79D300358C5E /* vertexa.glsl */; };
+		6EB33B7419DF27F100358C5E /* LineLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 6EB33B7319DF27F100358C5E /* LineLayer.m */; };
+		6EB33B7719DF27F800358C5E /* RadarLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 6EB33B7619DF27F800358C5E /* RadarLayer.m */; };
+		6EB33B7B19DF5C3900358C5E /* lines_fragment.glsl in Resources */ = {isa = PBXBuildFile; fileRef = 6EB33B7919DF5C3900358C5E /* lines_fragment.glsl */; };
+		6EB33B7F19DF5C4C00358C5E /* lines_vertex.glsl in Resources */ = {isa = PBXBuildFile; fileRef = 6EB33B7D19DF5C4C00358C5E /* lines_vertex.glsl */; };
+		6EB33B8319DF5C5A00358C5E /* radar_fragment.glsl in Resources */ = {isa = PBXBuildFile; fileRef = 6EB33B8119DF5C5A00358C5E /* radar_fragment.glsl */; };
+		6EB33B8619DF5C6600358C5E /* radar_vertex.glsl in Resources */ = {isa = PBXBuildFile; fileRef = 6EB33B8519DF5C6600358C5E /* radar_vertex.glsl */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -111,7 +115,6 @@
 		6EB33B4E19DE4E0D00358C5E /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
 		6EB33B5019DE74FF00358C5E /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		6EB33B5319DE79D300358C5E /* county_lines.shp */ = {isa = PBXFileReference; lastKnownFileType = file; path = county_lines.shp; sourceTree = "<group>"; };
-		6EB33B5419DE79D300358C5E /* fragmenta.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = fragmenta.glsl; sourceTree = "<group>"; };
 		6EB33B5619DE79D300358C5E /* 702-share-toolbar.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "702-share-toolbar.png"; sourceTree = "<group>"; };
 		6EB33B5719DE79D300358C5E /* 702-share-toolbar@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "702-share-toolbar@2x.png"; sourceTree = "<group>"; };
 		6EB33B5819DE79D300358C5E /* 723-location-arrow-toolbar.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "723-location-arrow-toolbar.png"; sourceTree = "<group>"; };
@@ -122,7 +125,14 @@
 		6EB33B5D19DE79D300358C5E /* 832-stack-1-toolbar@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "832-stack-1-toolbar@2x.png"; sourceTree = "<group>"; };
 		6EB33B5E19DE79D300358C5E /* interstate_lines */ = {isa = PBXFileReference; lastKnownFileType = file; path = interstate_lines; sourceTree = "<group>"; };
 		6EB33B5F19DE79D300358C5E /* state_lines.shp */ = {isa = PBXFileReference; lastKnownFileType = file; path = state_lines.shp; sourceTree = "<group>"; };
-		6EB33B6019DE79D300358C5E /* vertexa.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = vertexa.glsl; sourceTree = "<group>"; };
+		6EB33B7219DF27F100358C5E /* LineLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LineLayer.h; sourceTree = "<group>"; };
+		6EB33B7319DF27F100358C5E /* LineLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LineLayer.m; sourceTree = "<group>"; };
+		6EB33B7519DF27F800358C5E /* RadarLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RadarLayer.h; sourceTree = "<group>"; };
+		6EB33B7619DF27F800358C5E /* RadarLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RadarLayer.m; sourceTree = "<group>"; };
+		6EB33B7919DF5C3900358C5E /* lines_fragment.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = lines_fragment.glsl; sourceTree = "<group>"; };
+		6EB33B7D19DF5C4C00358C5E /* lines_vertex.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = lines_vertex.glsl; sourceTree = "<group>"; };
+		6EB33B8119DF5C5A00358C5E /* radar_fragment.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = radar_fragment.glsl; sourceTree = "<group>"; };
+		6EB33B8519DF5C6600358C5E /* radar_vertex.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = radar_vertex.glsl; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -178,6 +188,7 @@
 		6EB33AEA19DE3E6B00358C5E /* WeatherRadar */ = {
 			isa = PBXGroup;
 			children = (
+				6EB33B7119DF27E700358C5E /* Layers */,
 				6EB33B5219DE79D300358C5E /* Assets */,
 				6EB33B1119DE3F9A00358C5E /* Lib */,
 				6EB33AEF19DE3E6C00358C5E /* AppDelegate.h */,
@@ -311,11 +322,13 @@
 			isa = PBXGroup;
 			children = (
 				6EB33B5319DE79D300358C5E /* county_lines.shp */,
-				6EB33B5419DE79D300358C5E /* fragmenta.glsl */,
 				6EB33B5519DE79D300358C5E /* Images */,
 				6EB33B5E19DE79D300358C5E /* interstate_lines */,
 				6EB33B5F19DE79D300358C5E /* state_lines.shp */,
-				6EB33B6019DE79D300358C5E /* vertexa.glsl */,
+				6EB33B7919DF5C3900358C5E /* lines_fragment.glsl */,
+				6EB33B7D19DF5C4C00358C5E /* lines_vertex.glsl */,
+				6EB33B8119DF5C5A00358C5E /* radar_fragment.glsl */,
+				6EB33B8519DF5C6600358C5E /* radar_vertex.glsl */,
 			);
 			path = Assets;
 			sourceTree = "<group>";
@@ -333,6 +346,17 @@
 				6EB33B5D19DE79D300358C5E /* 832-stack-1-toolbar@2x.png */,
 			);
 			path = Images;
+			sourceTree = "<group>";
+		};
+		6EB33B7119DF27E700358C5E /* Layers */ = {
+			isa = PBXGroup;
+			children = (
+				6EB33B7219DF27F100358C5E /* LineLayer.h */,
+				6EB33B7319DF27F100358C5E /* LineLayer.m */,
+				6EB33B7519DF27F800358C5E /* RadarLayer.h */,
+				6EB33B7619DF27F800358C5E /* RadarLayer.m */,
+			);
+			path = Layers;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -416,11 +440,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				6EB33B6619DE79D300358C5E /* 723-location-arrow-toolbar@2x.png in Resources */,
+				6EB33B7B19DF5C3900358C5E /* lines_fragment.glsl in Resources */,
 				6EB33B6519DE79D300358C5E /* 723-location-arrow-toolbar.png in Resources */,
 				6EB33AF719DE3E6C00358C5E /* Main.storyboard in Resources */,
 				6EB33B6C19DE79D300358C5E /* state_lines.shp in Resources */,
-				6EB33B6219DE79D300358C5E /* fragmenta.glsl in Resources */,
 				6EB33B6719DE79D300358C5E /* 740-gear-toolbar.png in Resources */,
+				6EB33B8319DF5C5A00358C5E /* radar_fragment.glsl in Resources */,
 				6EB33AFC19DE3E6C00358C5E /* LaunchScreen.xib in Resources */,
 				6EB33B6119DE79D300358C5E /* county_lines.shp in Resources */,
 				6EB33B6A19DE79D300358C5E /* 832-stack-1-toolbar@2x.png in Resources */,
@@ -428,9 +453,10 @@
 				6EB33B6319DE79D300358C5E /* 702-share-toolbar.png in Resources */,
 				6EB33B6419DE79D300358C5E /* 702-share-toolbar@2x.png in Resources */,
 				6EB33B6919DE79D300358C5E /* 832-stack-1-toolbar.png in Resources */,
+				6EB33B8619DF5C6600358C5E /* radar_vertex.glsl in Resources */,
 				6EB33B6B19DE79D300358C5E /* interstate_lines in Resources */,
 				6EB33AF919DE3E6C00358C5E /* Images.xcassets in Resources */,
-				6EB33B6D19DE79D300358C5E /* vertexa.glsl in Resources */,
+				6EB33B7F19DF5C4C00358C5E /* lines_vertex.glsl in Resources */,
 				6EB33B6819DE79D300358C5E /* 740-gear-toolbar@2x.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -451,7 +477,9 @@
 			files = (
 				6EB33AF419DE3E6C00358C5E /* RadarViewController.m in Sources */,
 				6EB33AF119DE3E6C00358C5E /* AppDelegate.m in Sources */,
+				6EB33B7719DF27F800358C5E /* RadarLayer.m in Sources */,
 				6EB33AEE19DE3E6C00358C5E /* main.m in Sources */,
+				6EB33B7419DF27F100358C5E /* LineLayer.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -654,6 +682,7 @@
 				6EB33B0D19DE3E6C00358C5E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		6EB33B0E19DE3E6C00358C5E /* Build configuration list for PBXNativeTarget "WeatherRadarTests" */ = {
 			isa = XCConfigurationList;
@@ -662,6 +691,7 @@
 				6EB33B1019DE3E6C00358C5E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
