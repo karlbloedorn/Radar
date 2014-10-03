@@ -35,8 +35,8 @@ public class RadarSurface extends GLSurfaceView {
         panDetector = new GestureDetector(context,new PanListener());
         scaleDetector = new ScaleGestureDetector(context,new ScaleListener());
 
-        InputStream fragmentStream =  context.getResources().openRawResource(R.raw.fragmenta);
-        InputStream vertexStream =   context.getResources().openRawResource(R.raw.vertexa);
+        InputStream fragmentStream =  context.getResources().openRawResource(R.raw.lines_fragment);
+        InputStream vertexStream =   context.getResources().openRawResource(R.raw.lines_vertex);
         try {
             renderer.vertexShaderCode = CharStreams.toString(new InputStreamReader(vertexStream));
             renderer.fragmentShaderCode = CharStreams.toString(new InputStreamReader(fragmentStream));
