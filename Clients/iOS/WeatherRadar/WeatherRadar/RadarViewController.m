@@ -40,21 +40,40 @@
     }
     self.radarSurface.context = self.context;
     self.radarSurface.contentScaleFactor = 1.0;
+  
+    UIBarButtonItem * share = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"702-share-toolbar.png"] style:UIBarButtonItemStyleDone target:self action: @selector(sharePressed:)];
+    UIBarButtonItem * location = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"723-location-arrow-toolbar.png"] style:UIBarButtonItemStyleDone target:self action:nil];
+    UIBarButtonItem * layers = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"832-stack-1-toolbar.png"] style:UIBarButtonItemStyleDone target:self action:nil];
+    UIBarButtonItem * settings = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"740-gear-toolbar.png"] style:UIBarButtonItemStyleDone target:self action:nil];
+    self.navigationItem.rightBarButtonItems = @[  settings,layers ];
+    self.navigationItem.leftBarButtonItems =@[ location,share];
+    
     CADisplayLink* displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(render:)];
     displayLink.frameInterval = 1;
     [displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
 }
--(void) viewDidAppear:(BOOL)animated{
-    UIBarButtonItem * share = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"702-share-toolbar.png"] style:UIBarButtonItemStyleDone target:self action:nil];
+
+-(void) sharePressed: (id) sender{
+    NSMutableArray *items = [NSMutableArray new];
+
+    [items addObject:[self.radarSurface snapshot]];
+    NSArray *activityItems = [NSArray arrayWithArray:items];
+    UIActivityViewController *activityViewController = [[UIActivityViewController alloc] initWithActivityItems:activityItems applicationActivities:nil];
     
-    UIBarButtonItem * location = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"723-location-arrow-toolbar.png"] style:UIBarButtonItemStyleDone target:self action:nil];
+    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone) {
+        [self presentViewController: activityViewController animated:YES completion:nil];
+    } else if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
+        UIPopoverController *aPopoverController = [[UIPopoverController alloc] initWithContentViewController:activityViewController];
+        [aPopoverController presentPopoverFromBarButtonItem:sender permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+    }
+}
+-(void) layersPressed{
     
-    UIBarButtonItem * layers = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"832-stack-1-toolbar.png"] style:UIBarButtonItemStyleDone target:self action:nil];
+}
+-(void) settingsPressed{
     
-    UIBarButtonItem * settings = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"740-gear-toolbar.png"] style:UIBarButtonItemStyleDone target:self action:nil];
-    
-    self.navigationItem.rightBarButtonItems = @[  settings,layers ];
-    self.navigationItem.leftBarButtonItems =@[ location,share];
+}
+-(void) locationPressed{
     
 }
 
@@ -63,9 +82,7 @@
 }
 
 - (void)glkView:(GLKView *)view drawInRect:(CGRect)rect {
-    
     glClearColor(0.0, 0.0, 0.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
-    
 }
 @end
