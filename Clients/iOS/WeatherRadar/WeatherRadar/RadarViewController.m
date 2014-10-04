@@ -12,6 +12,7 @@
 #import <GLKit/GLKit.h>
 #import <OpenGLES/ES2/gl.h>
 #import <OpenGLES/ES2/glext.h>
+#import "LineLayer.h"
 
 @interface RadarViewController ()
 
@@ -22,6 +23,7 @@
 @end
 
 @implementation RadarViewController{
+    float pinchScale;
     float mapScale;
     float centerMapY;
     float centerMapX;
@@ -30,28 +32,18 @@
     GLuint radarProgram;
     GLint radarModelViewUniform;
     GLint lineModelViewUniform;
-    
+    NSMutableArray * lineLayers;
+    NSMutableArray * radarLayers;
 }
-
-- (void)viewDidLoad {
-    [super viewDidLoad];
-
-    mapScale = 60;
-    centerMapY = 54;
-    centerMapX = 78;
+-(void) setupUserInterface{
     
     self.bannerView.adUnitID = @"ca-app-pub-5636726170867832/9790740103";
     self.bannerView.rootViewController = self;
     GADRequest *request = [GADRequest request];
     request.testDevices = @[ GAD_SIMULATOR_ID ];
     [self.bannerView loadRequest:request];
-    self.context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
-    if (!self.context) {
-        NSLog(@"Failed to create ES context");
-    }
-    self.radarSurface.context = self.context;
-    self.radarSurface.contentScaleFactor = 1.0;
-  
+    
+    
     UIBarButtonItem * share = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"702-share-toolbar.png"] style:UIBarButtonItemStyleDone target:self action: @selector(sharePressed:)];
     UIBarButtonItem * location = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"723-location-arrow-toolbar.png"] style:UIBarButtonItemStyleDone target:self action:nil];
     UIBarButtonItem * layers = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"832-stack-1-toolbar.png"] style:UIBarButtonItemStyleDone target:self action:nil];
@@ -59,8 +51,65 @@
     self.navigationItem.rightBarButtonItems = @[  settings,layers ];
     self.navigationItem.leftBarButtonItems =@[ location,share];
     
-    [EAGLContext setCurrentContext:self.context];
+    UIPanGestureRecognizer *panRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(pan:)];
+    [panRecognizer setMinimumNumberOfTouches:1];
+    [panRecognizer setMaximumNumberOfTouches:2];
+    [self.radarSurface addGestureRecognizer:panRecognizer];
+    
+    
+    UIPinchGestureRecognizer * pinchRecognizer = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(pinch:)];
+    [self.radarSurface addGestureRecognizer:pinchRecognizer];
+}
+- (void)pan:(UIPanGestureRecognizer *)gesture
+{
+    CGPoint translation = [gesture translationInView:self.view];
+    centerMapY -= translation.y / mapScale;
+    centerMapX -= translation.x / mapScale;
+    [gesture setTranslation:CGPointMake(0, 0) inView:self.view];
+}
+-(void) pinch: (UIPinchGestureRecognizer *) gesture
+{
+    if( gesture.state == UIGestureRecognizerStateBegan ){
+        pinchScale = mapScale;
+    } else if(gesture.state == UIGestureRecognizerStateChanged) {
+        mapScale = pinchScale * gesture.scale;
+    }
+    if(gesture.state == UIGestureRecognizerStateEnded) {
+        mapScale = pinchScale * gesture.scale;
+        pinchScale = 1.0;
+    }
+ 
+}
 
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    
+    [self setupUserInterface];
+
+    lineLayers = [[NSMutableArray alloc] init];
+    radarLayers = [[NSMutableArray alloc] init];
+    
+    [lineLayers addObject: [[LineLayer alloc] initWithData:[NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"state_lines" ofType:@"shp"]] andLabel: @"States"]];
+   // [lineLayers addObject: [[LineLayer alloc] initWithData:[NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"interstate_lines" ofType:@"shp"]] andLabel: @"Interstates"]];
+   // [lineLayers addObject: [[LineLayer alloc] initWithData:[NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"county_lines" ofType:@"shp"]] andLabel: @"Counties"]];
+
+    for(LineLayer * overlay in lineLayers){
+        overlay.isVisible = YES;
+    }
+
+    mapScale = 7;
+    centerMapY = 54;
+    centerMapX = 78;
+    
+    
+    self.context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
+    if (!self.context) {
+        NSLog(@"Failed to create ES context");
+    }
+    self.radarSurface.context = self.context;
+    //self.radarSurface.contentScaleFactor = 1.0;
+
+    [EAGLContext setCurrentContext:self.context];
     
     lineProgram = [self loadShadersWithVertPath:@"lines_vertex" andFragPath: @"lines_fragment" andColorEnabled:NO];
     radarProgram = [self loadShadersWithVertPath:@"radar_vertex" andFragPath: @"radar_fragment" andColorEnabled:YES];
@@ -68,7 +117,6 @@
     lineModelViewUniform = glGetUniformLocation(lineProgram, "modelViewProjectionMatrix");
    radarModelViewUniform = glGetUniformLocation(radarProgram, "modelViewProjectionMatrix");
 
-    
     CADisplayLink* displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(render:)];
     displayLink.frameInterval = 1;
     [displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
@@ -122,13 +170,20 @@
     GLKMatrix4 projectionMatrix = GLKMatrix4MakeOrtho(left, right, bottom,top,near,far);
     modelViewProjectionMatrix = GLKMatrix4Multiply(projectionMatrix, modelviewMatrix);
 
-    glUseProgram(radarProgram);
-    glUniformMatrix4fv(radarModelViewUniform, 1, 0, modelViewProjectionMatrix.m);
+    //glUseProgram(radarProgram);
+    //glUniformMatrix4fv(radarModelViewUniform, 1, 0, modelViewProjectionMatrix.m);
     
     // render radar layers here.
     
     glUseProgram(lineProgram);
     glUniformMatrix4fv(lineModelViewUniform, 1, 0, modelViewProjectionMatrix.m);
+    
+    for(LineLayer * overlay in lineLayers){
+        if(![overlay isSetup]){
+            [overlay setup];
+        }
+        [overlay draw];
+    }
     
     // render line layers here
 }

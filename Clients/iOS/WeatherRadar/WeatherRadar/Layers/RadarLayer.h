@@ -19,6 +19,6 @@
 
 -(instancetype) initWithData:(NSData *) data andLabel:(NSString *) label;
 -(void) setup;
--(void) draw:(GLuint) program;
+-(void) draw;
 
 @end

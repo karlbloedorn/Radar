@@ -21,7 +21,7 @@
 -(void) setup{
     
 }
--(void) draw:(GLuint) program{
+-(void) draw{
     
 }
 @end
