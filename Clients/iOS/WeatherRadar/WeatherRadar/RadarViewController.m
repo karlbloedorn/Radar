@@ -12,6 +12,7 @@
 #import <GLKit/GLKit.h>
 #import <OpenGLES/ES2/gl.h>
 #import <OpenGLES/ES2/glext.h>
+#import "LineLayer.h"
 
 @interface RadarViewController ()
 
@@ -30,13 +31,28 @@
     GLuint radarProgram;
     GLint radarModelViewUniform;
     GLint lineModelViewUniform;
-    
+    NSMutableArray * lineLayers;
+    NSMutableArray * radarLayers;
 }
+
+
+
 
 - (void)viewDidLoad {
     [super viewDidLoad];
 
-    mapScale = 60;
+    lineLayers = [[NSMutableArray alloc] init];
+    radarLayers = [[NSMutableArray alloc] init];
+    
+    [lineLayers addObject: [[LineLayer alloc] initWithData:[NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"state_lines" ofType:@"shp"]] andLabel: @"States"]];
+    [lineLayers addObject: [[LineLayer alloc] initWithData:[NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"interstate_lines" ofType:@"shp"]] andLabel: @"Interstates"]];
+    [lineLayers addObject: [[LineLayer alloc] initWithData:[NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"county_lines" ofType:@"shp"]] andLabel: @"Counties"]];
+
+    for(LineLayer * overlay in lineLayers){
+        overlay.isVisible = YES;
+    }
+
+    mapScale = 7;
     centerMapY = 54;
     centerMapX = 78;
     
@@ -122,13 +138,20 @@
     GLKMatrix4 projectionMatrix = GLKMatrix4MakeOrtho(left, right, bottom,top,near,far);
     modelViewProjectionMatrix = GLKMatrix4Multiply(projectionMatrix, modelviewMatrix);
 
-    glUseProgram(radarProgram);
-    glUniformMatrix4fv(radarModelViewUniform, 1, 0, modelViewProjectionMatrix.m);
+    //glUseProgram(radarProgram);
+    //glUniformMatrix4fv(radarModelViewUniform, 1, 0, modelViewProjectionMatrix.m);
     
     // render radar layers here.
     
     glUseProgram(lineProgram);
     glUniformMatrix4fv(lineModelViewUniform, 1, 0, modelViewProjectionMatrix.m);
+    
+    for(LineLayer * overlay in lineLayers){
+        if(![overlay isSetup]){
+            [overlay setup];
+        }
+        [overlay draw];
+    }
     
     // render line layers here
 }
