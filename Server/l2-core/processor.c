@@ -26,6 +26,7 @@
 
 #define RADIUS_OF_EARTH 6371000.0
 #define NUMBUCKETS 9
+#define VERSION_PREFIX "AR2V00"
 
 typedef enum { RADAR_NOMEM, RADAR_INVALID_DATA, RADAR_OK } radar_errors_t;
 
@@ -120,6 +121,41 @@ typedef struct scaleBucketStruct {
      int range[6];
 } ScaleBucket;
 
+typedef struct __attribute__ ((packed)) volumeHeaderFileStruct {
+     char tape[6];
+     char version[3];
+     char extension[3];
+     int date;
+     int time;
+     char icao[4];
+} volumeHeaderFile;
+
+typedef struct volumeHeaderStruct {
+     uint8_t version;
+     uint16_t extension;
+     time_t datetime;
+     char icao[5];
+} volumeHeader;
+
+radar_errors_t loadVolumeHeader(volumeHeaderFile *in, volumeHeader *out) {
+     char version[3];
+     char extension[4];
+     if(strncmp(VERSION_PREFIX, in->tape, sizeof(VERSION_PREFIX) - 1)) {
+          fprintf(stderr, "Failed to match prefix -%s- != -%s-!\n", in->tape, VERSION_PREFIX);
+     }
+     strncpy(version, in->version, 2);
+     strncpy(extension, in->extension, 3);
+     strncpy(out->icao, in->icao, 4);
+     version[2] = '\0';
+     extension[3] = '\0';
+     out->icao[4] = '\0';
+     out->version = (uint8_t)atoi(version);
+     out->extension = (uint16_t)atoi(extension);
+     out->datetime = (ntohl(in->date) - 1) * 86400 + (ntohl(in->time)/1000);
+     fprintf(stderr, "%i - %i\n", ntohl(in->date), ntohl(in->time));
+     return RADAR_OK;
+}
+
 float ntohf(float input);
 float htonf(float input);
 void moveWithBearing(float originLatitude, float originLongitude,
@@ -156,15 +192,18 @@ radar_errors_t process(int fd, char **output, size_t *output_length)
      }
      size_t sum = 0;
 
-     char fileheader[24];
+     volumeHeaderFile fileHeader;
      int bytesRead0 = 0;
-     while (bytesRead0 < 24) {
-          int bytes = read(fd, fileheader + bytesRead0, 24 - bytesRead0);
+     while (bytesRead0 < sizeof(volumeHeaderFile)) {
+          int bytes = read(fd, ((char *)&fileHeader) + bytesRead0, sizeof(volumeHeaderFile) - bytesRead0);
           if (bytes <= 0) {
                exit(1);
           }
           bytesRead0 += bytes;
      }
+     volumeHeader header;
+     loadVolumeHeader(&fileHeader, &header);
+     fprintf(stderr, "ICAO: %s - %i %i - %lu\n", header.icao, header.extension, header.version, header.datetime);
 
      short last = 0;
      int chunkIndex = 0;
@@ -286,6 +325,7 @@ radar_errors_t process(int fd, char **output, size_t *output_length)
           MessageHeader *messageHead =
                ((MessageHeader *) messageHeaderOffset);
           messageHeaderLoad(messageHead);
+          fprintf(stderr, " %i" , messageHead->messageType);
 
           if (messageHead->messageType == 31) {
                message_offset31 += (messageHead->messageSize * 2 + 12 - 2432);
