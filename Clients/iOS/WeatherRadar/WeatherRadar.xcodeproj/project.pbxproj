@@ -46,6 +46,7 @@
 		6EB33B7F19DF5C4C00358C5E /* lines_vertex.glsl in Resources */ = {isa = PBXBuildFile; fileRef = 6EB33B7D19DF5C4C00358C5E /* lines_vertex.glsl */; };
 		6EB33B8319DF5C5A00358C5E /* radar_fragment.glsl in Resources */ = {isa = PBXBuildFile; fileRef = 6EB33B8119DF5C5A00358C5E /* radar_fragment.glsl */; };
 		6EB33B8619DF5C6600358C5E /* radar_vertex.glsl in Resources */ = {isa = PBXBuildFile; fileRef = 6EB33B8519DF5C6600358C5E /* radar_vertex.glsl */; };
+		6EB33B8919E08F0600358C5E /* LayerSelectorViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6EB33B8819E08F0600358C5E /* LayerSelectorViewController.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -133,6 +134,8 @@
 		6EB33B7D19DF5C4C00358C5E /* lines_vertex.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = lines_vertex.glsl; sourceTree = "<group>"; };
 		6EB33B8119DF5C5A00358C5E /* radar_fragment.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = radar_fragment.glsl; sourceTree = "<group>"; };
 		6EB33B8519DF5C6600358C5E /* radar_vertex.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = radar_vertex.glsl; sourceTree = "<group>"; };
+		6EB33B8719E08F0600358C5E /* LayerSelectorViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LayerSelectorViewController.h; sourceTree = "<group>"; };
+		6EB33B8819E08F0600358C5E /* LayerSelectorViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LayerSelectorViewController.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -195,6 +198,8 @@
 				6EB33AF019DE3E6C00358C5E /* AppDelegate.m */,
 				6EB33AF219DE3E6C00358C5E /* RadarViewController.h */,
 				6EB33AF319DE3E6C00358C5E /* RadarViewController.m */,
+				6EB33B8719E08F0600358C5E /* LayerSelectorViewController.h */,
+				6EB33B8819E08F0600358C5E /* LayerSelectorViewController.m */,
 				6EB33AF519DE3E6C00358C5E /* Main.storyboard */,
 				6EB33AF819DE3E6C00358C5E /* Images.xcassets */,
 				6EB33AFA19DE3E6C00358C5E /* LaunchScreen.xib */,
@@ -480,6 +485,7 @@
 				6EB33B7719DF27F800358C5E /* RadarLayer.m in Sources */,
 				6EB33AEE19DE3E6C00358C5E /* main.m in Sources */,
 				6EB33B7419DF27F100358C5E /* LineLayer.m in Sources */,
+				6EB33B8919E08F0600358C5E /* LayerSelectorViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

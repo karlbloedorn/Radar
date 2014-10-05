@@ -13,6 +13,7 @@
 #import <OpenGLES/ES2/gl.h>
 #import <OpenGLES/ES2/glext.h>
 #import "LineLayer.h"
+#import "LayerSelectorViewController.h"
 
 @interface RadarViewController ()
 
@@ -34,6 +35,11 @@
     GLint lineModelViewUniform;
     NSMutableArray * lineLayers;
     NSMutableArray * radarLayers;
+    UIBarButtonItem * shareButton;
+    UIBarButtonItem * locationButton;
+    UIBarButtonItem * settingsButton;
+    UIBarButtonItem * layersButton;
+    UIPopoverController * layerPickerPopover;
 }
 -(void) setupUserInterface{
     
@@ -44,12 +50,13 @@
     [self.bannerView loadRequest:request];
     
     
-    UIBarButtonItem * share = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"702-share-toolbar.png"] style:UIBarButtonItemStyleDone target:self action: @selector(sharePressed:)];
-    UIBarButtonItem * location = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"723-location-arrow-toolbar.png"] style:UIBarButtonItemStyleDone target:self action:nil];
-    UIBarButtonItem * layers = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"832-stack-1-toolbar.png"] style:UIBarButtonItemStyleDone target:self action:nil];
-    UIBarButtonItem * settings = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"740-gear-toolbar.png"] style:UIBarButtonItemStyleDone target:self action:nil];
-    self.navigationItem.rightBarButtonItems = @[  settings,layers ];
-    self.navigationItem.leftBarButtonItems =@[ location,share];
+    shareButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"702-share-toolbar.png"] style:UIBarButtonItemStyleDone target:self action: @selector(sharePressed:)];
+    
+    locationButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"723-location-arrow-toolbar.png"] style:UIBarButtonItemStyleDone target:self action:nil];
+    layersButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"832-stack-1-toolbar.png"] style:UIBarButtonItemStyleDone target:self action:@selector(layersPressed)];
+    settingsButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"740-gear-toolbar.png"] style:UIBarButtonItemStyleDone target:self action:nil];
+    self.navigationItem.rightBarButtonItems = @[  settingsButton,layersButton ];
+    self.navigationItem.leftBarButtonItems =@[ locationButton,shareButton];
     
     UIPanGestureRecognizer *panRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(pan:)];
     [panRecognizer setMinimumNumberOfTouches:1];
@@ -90,8 +97,8 @@
     radarLayers = [[NSMutableArray alloc] init];
     
     [lineLayers addObject: [[LineLayer alloc] initWithData:[NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"state_lines" ofType:@"shp"]] andLabel: @"States"]];
-   // [lineLayers addObject: [[LineLayer alloc] initWithData:[NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"interstate_lines" ofType:@"shp"]] andLabel: @"Interstates"]];
-   // [lineLayers addObject: [[LineLayer alloc] initWithData:[NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"county_lines" ofType:@"shp"]] andLabel: @"Counties"]];
+    [lineLayers addObject: [[LineLayer alloc] initWithData:[NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"interstate_lines" ofType:@"shp"]] andLabel: @"Interstates"]];
+    [lineLayers addObject: [[LineLayer alloc] initWithData:[NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"county_lines" ofType:@"shp"]] andLabel: @"Counties"]];
 
     for(LineLayer * overlay in lineLayers){
         overlay.isVisible = YES;
@@ -107,7 +114,6 @@
         NSLog(@"Failed to create ES context");
     }
     self.radarSurface.context = self.context;
-    //self.radarSurface.contentScaleFactor = 1.0;
 
     [EAGLContext setCurrentContext:self.context];
     
@@ -136,8 +142,24 @@
         [aPopoverController presentPopoverFromBarButtonItem:sender permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
     }
 }
+
 -(void) layersPressed{
     
+    
+    LayerSelectorViewController * layerSelector = [self.storyboard instantiateViewControllerWithIdentifier:@"LayerSelectorViewController"];
+    layerSelector.lineLayers = lineLayers;
+    [self.navigationController pushViewController:layerSelector animated:YES];
+    
+    //layerSelector.popoverPresentationController.permittedArrowDirections = UIPopoverArrowDirectionUp;
+    //layerSelector.popoverPresentationController.sourceView = layersButton;
+    //layerSelector.popoverPresentationController.delegate = self;
+    
+    //[self presentViewController:layerSelector animated:YES completion:nil];
+    //popover presentationStyle = UIModalPresentationFormSheet;
+    /*
+    layerPickerPopover = [[UIPopoverController alloc] initWithContentViewController:layerSelector];
+    [layerPickerPopover presentPopoverFromBarButtonItem:layersButton permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
+ */
 }
 -(void) settingsPressed{
     
