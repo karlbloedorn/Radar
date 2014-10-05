@@ -14,6 +14,7 @@
 #import <OpenGLES/ES2/glext.h>
 #import "LineLayer.h"
 #import "LayerSelectorViewController.h"
+#import "RadarLayer.h"
 
 @interface RadarViewController ()
 
@@ -46,7 +47,8 @@
     self.bannerView.adUnitID = @"ca-app-pub-5636726170867832/9790740103";
     self.bannerView.rootViewController = self;
     GADRequest *request = [GADRequest request];
-    request.testDevices = @[ GAD_SIMULATOR_ID ];
+    request.testDevices = @[ @"372a59f601c273f3b4303f5767ac6083",@"293240ee238a2d85888393916c716aef", GAD_SIMULATOR_ID ];
+    
     [self.bannerView loadRequest:request];
     
     
@@ -101,6 +103,14 @@
     [lineLayers addObject: [[LineLayer alloc] initWithData:[NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"county_lines" ofType:@"shp"]] andLabel: @"Counties"]];
 
     for(LineLayer * overlay in lineLayers){
+        overlay.isVisible = YES;
+    }
+    
+    
+    NSString * testRadarFilePath =[[NSBundle mainBundle] pathForResource:@"KTBW-new" ofType:@"bin"];
+    [radarLayers addObject: [[RadarLayer alloc] initWithData:[NSData dataWithContentsOfFile:testRadarFilePath] andLabel: @"KTBW"]];
+
+    for(RadarLayer * overlay in radarLayers){
         overlay.isVisible = YES;
     }
 
@@ -192,11 +202,6 @@
     GLKMatrix4 projectionMatrix = GLKMatrix4MakeOrtho(left, right, bottom,top,near,far);
     modelViewProjectionMatrix = GLKMatrix4Multiply(projectionMatrix, modelviewMatrix);
 
-    //glUseProgram(radarProgram);
-    //glUniformMatrix4fv(radarModelViewUniform, 1, 0, modelViewProjectionMatrix.m);
-    
-    // render radar layers here.
-    
     glUseProgram(lineProgram);
     glUniformMatrix4fv(lineModelViewUniform, 1, 0, modelViewProjectionMatrix.m);
     
@@ -206,8 +211,16 @@
         }
         [overlay draw];
     }
+    glUseProgram(radarProgram);
+    glUniformMatrix4fv(radarModelViewUniform, 1, 0, modelViewProjectionMatrix.m);
     
-    // render line layers here
+    
+    for(RadarLayer * overlay in radarLayers){
+        if(![overlay isSetup]){
+            [overlay setup];
+        }
+        [overlay draw];
+    }
 }
 
 
