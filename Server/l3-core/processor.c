@@ -59,9 +59,23 @@ typedef struct  __attribute__((packed)) product_description_block_struct {
      uint16_t number_of_maps;
      uint32_t offset_to_symbology_block;
      uint32_t offset_to_graphic_block;
-     uint32_t offset_to_tabular_block; 
+     uint32_t offset_to_tabular_block;
 } product_description_block;
 
+typedef struct product_symbology_block_struct {
+     uint16_t divider;
+     uint16_t block_id;
+     uint32_t block_length;
+     uint16_t number_of_layers;
+} product_symbology_block;
+
+typedef struct radial_data_packet_struct {
+     uint16_t packet_code;
+     uint16_t index_of_range_bin;
+     int32_t j_center_sweep;
+     uint16_t scale_factor;
+     uint16_t number_of_radials;
+} radial_data_packet;
 
 int main(int argc, char *argv[])
 {
@@ -82,6 +96,21 @@ int main(int argc, char *argv[])
      data = mmap((caddr_t)0, sbuf.st_size, PROT_READ|PROT_WRITE, MAP_PRIVATE, fd, 0);
      process(data);
      return 0;
+}
+
+void load_radial_data_packet(radial_data_packet *in) {
+     in->packet_code = ntohs(in->packet_code);
+     in->index_of_range_bin = ntohs(in->index_of_range_bin);
+     in->j_center_sweep = ntohl(in->j_center_sweep);
+     in->scale_factor = ntohs(in->scale_factor);
+     in->number_of_radials = ntohs(in->number_of_radials);
+}
+
+void load_product_symbology_block(product_symbology_block *in) {
+     in->divider = ntohs(in->divider);
+     in->block_id = ntohs(in->block_id);
+     in->block_length = ntohl(in->block_length);
+     in->number_of_layers = ntohs(in->number_of_layers);
 }
 
 void load_product_description_block(product_description_block *in) {
@@ -155,10 +184,16 @@ void process(char *data) {
      wmo_header test;
      message_header_block *test2 = NULL;
      product_description_block *test3 = NULL;
+     product_symbology_block *test4 = NULL;
+     radial_data_packet *test5 = NULL;
      data = parse_wmo(data, &test);
      test2 = (message_header_block *)data;
-     test3 = (product_description_block *)(data + sizeof(message_header_block));
      load_message_header_block(test2);
+     test3 = (product_description_block *)(data + sizeof(message_header_block));
      load_product_description_block(test3);
-
+     test4 = (product_symbology_block *)(((char *)test3) + sizeof(product_description_block));
+     load_product_symbology_block(test4);
+     test5 = (radial_data_packet *)(((char *)test4) + sizeof(product_symbology_block));
+     load_radial_data_packet(test5);
 }
+
