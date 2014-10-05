@@ -62,20 +62,42 @@ typedef struct  __attribute__((packed)) product_description_block_struct {
      uint32_t offset_to_tabular_block;
 } product_description_block;
 
-typedef struct product_symbology_block_struct {
+typedef struct __attribute__((packed)) product_symbology_block_struct {
      uint16_t divider;
      uint16_t block_id;
      uint32_t block_length;
      uint16_t number_of_layers;
 } product_symbology_block;
 
-typedef struct radial_data_packet_struct {
+typedef struct __attribute__((packed)) symbology_layer_struct {
+     uint16_t divider;
+     uint32_t layer_length;
+} symbology_layer;
+
+typedef struct __attribute__((packed)) radial_data_packet_struct {
      uint16_t packet_code;
      uint16_t index_of_range_bin;
-     int32_t j_center_sweep;
+     uint16_t number_of_range_bins;
+     int16_t i_center_sweep;
+     int16_t j_center_sweep;
      uint16_t scale_factor;
      uint16_t number_of_radials;
 } radial_data_packet;
+
+typedef struct __attribute__((packed)) radial_struct {
+     uint16_t number_of_rle;
+     uint16_t start_angle;
+     uint16_t delta_angle;
+} radial;
+
+
+#define LOAD_RUN(all) ((all & 0xF0) >> 4)
+#define LOAD_CODE(all) (all & 0x0F)
+
+typedef struct rle_struct {
+     uint8_t run;
+     uint8_t code;
+} rle;
 
 int main(int argc, char *argv[])
 {
@@ -98,10 +120,23 @@ int main(int argc, char *argv[])
      return 0;
 }
 
+void load_radial(radial *in) {
+     in->number_of_rle = ntohs(in->number_of_rle);
+     in->start_angle = ntohs(in->start_angle);
+     in->delta_angle = ntohs(in->delta_angle);
+}
+
+void load_symbology_layer(symbology_layer *in) {
+     in->divider = ntohs(in->divider);
+     in->layer_length = ntohl(in->layer_length);
+}
+
 void load_radial_data_packet(radial_data_packet *in) {
      in->packet_code = ntohs(in->packet_code);
      in->index_of_range_bin = ntohs(in->index_of_range_bin);
-     in->j_center_sweep = ntohl(in->j_center_sweep);
+     in->number_of_range_bins = ntohs(in->number_of_range_bins);
+     in->i_center_sweep = ntohs(in->i_center_sweep);
+     in->j_center_sweep = ntohs(in->j_center_sweep);
      in->scale_factor = ntohs(in->scale_factor);
      in->number_of_radials = ntohs(in->number_of_radials);
 }
@@ -181,11 +216,15 @@ char *parse_wmo(char *data, wmo_header *in) {
 }
 
 void process(char *data) {
+     char *start = data;
      wmo_header test;
      message_header_block *test2 = NULL;
      product_description_block *test3 = NULL;
      product_symbology_block *test4 = NULL;
-     radial_data_packet *test5 = NULL;
+     symbology_layer *test5 = NULL;
+     radial_data_packet *test6 = NULL;
+     radial *test7 = NULL;
+
      data = parse_wmo(data, &test);
      test2 = (message_header_block *)data;
      load_message_header_block(test2);
@@ -193,7 +232,34 @@ void process(char *data) {
      load_product_description_block(test3);
      test4 = (product_symbology_block *)(((char *)test3) + sizeof(product_description_block));
      load_product_symbology_block(test4);
-     test5 = (radial_data_packet *)(((char *)test4) + sizeof(product_symbology_block));
-     load_radial_data_packet(test5);
+     test5 = (symbology_layer *)(((char *)test4) + sizeof(product_symbology_block));
+     load_symbology_layer(test5);
+     test6 = (radial_data_packet *)(((char *)test5) + sizeof(symbology_layer));
+     load_radial_data_packet(test6);
+     test6->packet_code == 0xAF1F;
+     char *radial_start = (((char *)test6) + sizeof(radial_data_packet));
+     fprintf(stderr, "Index of start: %i\n", test6->index_of_range_bin);
+     for(int i = 0; i < test6->number_of_radials; i++) {
+          int total = 0;
+          test7 = (radial *)radial_start;
+          load_radial(test7);
+          if(test7->delta_angle != 10) {
+               fprintf(stderr, "Oh no! Angle (%i) != 10: %i\n", test7->delta_angle, radial_start - start);
+               exit(1);
+          } else {
+               fprintf(stderr, "Made it! %i: %i \n", test7->delta_angle, radial_start - start);
+          }
+          radial_start += sizeof(radial);
+          uint8_t *rles = (uint8_t *)radial_start;
+          for(int j = 0; j < test7->number_of_rle * 2; j++) {
+               rle radial_data;
+               radial_data.run = LOAD_RUN(rles[j]);
+               radial_data.code = LOAD_CODE(rles[j]);
+               total += radial_data.run;
+               //printf("Run: %i Code: %i\n", radial_data.run, radial_data.code);
+               radial_start++;
+          }
+          printf("Total: %i\n", total);
+     }
 }
 
