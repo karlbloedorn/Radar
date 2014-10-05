@@ -56,6 +56,42 @@
             </objects>
             <point key="canvasLocation" x="244" y="131"/>
         </scene>
+        <!--Layer Selector View Controller-->
+        <scene sceneID="WdT-9Q-6dT">
+            <objects>
+                <viewController storyboardIdentifier="LayerSelectorViewController" id="jjh-da-4pM" customClass="LayerSelectorViewController" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="YsY-St-Eht"/>
+                        <viewControllerLayoutGuide type="bottom" id="rWG-zs-uiR"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="5ea-WF-I2D">
+                        <rect key="frame" x="0.0" y="0.0" width="200" height="200"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" translatesAutoresizingMaskIntoConstraints="NO" id="0cj-3w-cp6">
+                                <rect key="frame" x="0.0" y="0.0" width="200" height="200"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                <connections>
+                                    <outlet property="dataSource" destination="jjh-da-4pM" id="QUU-4s-yg2"/>
+                                    <outlet property="delegate" destination="jjh-da-4pM" id="5ee-W8-Rgj"/>
+                                </connections>
+                            </tableView>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                        <constraints>
+                            <constraint firstAttribute="trailing" secondItem="0cj-3w-cp6" secondAttribute="trailing" id="Fsa-X6-bI8"/>
+                            <constraint firstItem="0cj-3w-cp6" firstAttribute="top" secondItem="5ea-WF-I2D" secondAttribute="top" id="e8c-fX-DUH"/>
+                            <constraint firstItem="rWG-zs-uiR" firstAttribute="top" secondItem="0cj-3w-cp6" secondAttribute="bottom" id="eTt-od-76Y"/>
+                            <constraint firstItem="0cj-3w-cp6" firstAttribute="leading" secondItem="5ea-WF-I2D" secondAttribute="leading" id="gM9-0T-bEd"/>
+                        </constraints>
+                    </view>
+                    <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+                    <size key="freeformSize" width="200" height="200"/>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="yS5-HU-uxi" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="717" y="-209"/>
+        </scene>
         <!--Navigation Controller-->
         <scene sceneID="ReU-4g-7OE">
             <objects>
@@ -71,6 +107,24 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="DrC-jq-uya" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="-417" y="137"/>
+        </scene>
+        <!--View Controller-->
+        <scene sceneID="edt-RQ-uww">
+            <objects>
+                <viewController automaticallyAdjustsScrollViewInsets="NO" id="IlR-n2-DhZ" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="gen-ut-K5y"/>
+                        <viewControllerLayoutGuide type="bottom" id="XkH-0d-srX"/>
+                    </layoutGuides>
+                    <view key="view" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="w6p-Qe-8Qf">
+                        <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    </view>
+                    <toolbarItems/>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="ptk-Dd-dLn" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
         </scene>
     </scenes>
 </document>

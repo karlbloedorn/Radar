@@ -41,7 +41,6 @@
         glEnableVertexAttribArray(GLKVertexAttribPosition);
         glVertexAttribPointer(GLKVertexAttribPosition, 2, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
         glDrawArrays(GL_LINES, 0, lineCount * 2);
-
     }
 }
 @end

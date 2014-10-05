@@ -13,6 +13,8 @@
 #import <OpenGLES/ES2/gl.h>
 #import <OpenGLES/ES2/glext.h>
 #import "LineLayer.h"
+#import "LayerSelectorViewController.h"
+#import "RadarLayer.h"
 
 @interface RadarViewController ()
 
@@ -34,22 +36,29 @@
     GLint lineModelViewUniform;
     NSMutableArray * lineLayers;
     NSMutableArray * radarLayers;
+    UIBarButtonItem * shareButton;
+    UIBarButtonItem * locationButton;
+    UIBarButtonItem * settingsButton;
+    UIBarButtonItem * layersButton;
+    UIPopoverController * layerPickerPopover;
 }
 -(void) setupUserInterface{
     
     self.bannerView.adUnitID = @"ca-app-pub-5636726170867832/9790740103";
     self.bannerView.rootViewController = self;
     GADRequest *request = [GADRequest request];
-    request.testDevices = @[ GAD_SIMULATOR_ID ];
+    request.testDevices = @[ @"372a59f601c273f3b4303f5767ac6083",@"293240ee238a2d85888393916c716aef", GAD_SIMULATOR_ID ];
+    
     [self.bannerView loadRequest:request];
     
     
-    UIBarButtonItem * share = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"702-share-toolbar.png"] style:UIBarButtonItemStyleDone target:self action: @selector(sharePressed:)];
-    UIBarButtonItem * location = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"723-location-arrow-toolbar.png"] style:UIBarButtonItemStyleDone target:self action:nil];
-    UIBarButtonItem * layers = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"832-stack-1-toolbar.png"] style:UIBarButtonItemStyleDone target:self action:nil];
-    UIBarButtonItem * settings = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"740-gear-toolbar.png"] style:UIBarButtonItemStyleDone target:self action:nil];
-    self.navigationItem.rightBarButtonItems = @[  settings,layers ];
-    self.navigationItem.leftBarButtonItems =@[ location,share];
+    shareButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"702-share-toolbar.png"] style:UIBarButtonItemStyleDone target:self action: @selector(sharePressed:)];
+    
+    locationButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"723-location-arrow-toolbar.png"] style:UIBarButtonItemStyleDone target:self action:nil];
+    layersButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"832-stack-1-toolbar.png"] style:UIBarButtonItemStyleDone target:self action:@selector(layersPressed)];
+    settingsButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"740-gear-toolbar.png"] style:UIBarButtonItemStyleDone target:self action:nil];
+    self.navigationItem.rightBarButtonItems = @[  settingsButton,layersButton ];
+    self.navigationItem.leftBarButtonItems =@[ locationButton,shareButton];
     
     UIPanGestureRecognizer *panRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(pan:)];
     [panRecognizer setMinimumNumberOfTouches:1];
@@ -90,10 +99,18 @@
     radarLayers = [[NSMutableArray alloc] init];
     
     [lineLayers addObject: [[LineLayer alloc] initWithData:[NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"state_lines" ofType:@"shp"]] andLabel: @"States"]];
-   // [lineLayers addObject: [[LineLayer alloc] initWithData:[NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"interstate_lines" ofType:@"shp"]] andLabel: @"Interstates"]];
-   // [lineLayers addObject: [[LineLayer alloc] initWithData:[NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"county_lines" ofType:@"shp"]] andLabel: @"Counties"]];
+    [lineLayers addObject: [[LineLayer alloc] initWithData:[NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"interstate_lines" ofType:@"shp"]] andLabel: @"Interstates"]];
+    [lineLayers addObject: [[LineLayer alloc] initWithData:[NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"county_lines" ofType:@"shp"]] andLabel: @"Counties"]];
 
     for(LineLayer * overlay in lineLayers){
+        overlay.isVisible = YES;
+    }
+    
+    
+    NSString * testRadarFilePath =[[NSBundle mainBundle] pathForResource:@"KTBW-new" ofType:@"bin"];
+    [radarLayers addObject: [[RadarLayer alloc] initWithData:[NSData dataWithContentsOfFile:testRadarFilePath] andLabel: @"KTBW"]];
+
+    for(RadarLayer * overlay in radarLayers){
         overlay.isVisible = YES;
     }
 
@@ -107,7 +124,6 @@
         NSLog(@"Failed to create ES context");
     }
     self.radarSurface.context = self.context;
-    //self.radarSurface.contentScaleFactor = 1.0;
 
     [EAGLContext setCurrentContext:self.context];
     
@@ -136,8 +152,24 @@
         [aPopoverController presentPopoverFromBarButtonItem:sender permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
     }
 }
+
 -(void) layersPressed{
     
+    
+    LayerSelectorViewController * layerSelector = [self.storyboard instantiateViewControllerWithIdentifier:@"LayerSelectorViewController"];
+    layerSelector.lineLayers = lineLayers;
+    [self.navigationController pushViewController:layerSelector animated:YES];
+    
+    //layerSelector.popoverPresentationController.permittedArrowDirections = UIPopoverArrowDirectionUp;
+    //layerSelector.popoverPresentationController.sourceView = layersButton;
+    //layerSelector.popoverPresentationController.delegate = self;
+    
+    //[self presentViewController:layerSelector animated:YES completion:nil];
+    //popover presentationStyle = UIModalPresentationFormSheet;
+    /*
+    layerPickerPopover = [[UIPopoverController alloc] initWithContentViewController:layerSelector];
+    [layerPickerPopover presentPopoverFromBarButtonItem:layersButton permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
+ */
 }
 -(void) settingsPressed{
     
@@ -170,11 +202,6 @@
     GLKMatrix4 projectionMatrix = GLKMatrix4MakeOrtho(left, right, bottom,top,near,far);
     modelViewProjectionMatrix = GLKMatrix4Multiply(projectionMatrix, modelviewMatrix);
 
-    //glUseProgram(radarProgram);
-    //glUniformMatrix4fv(radarModelViewUniform, 1, 0, modelViewProjectionMatrix.m);
-    
-    // render radar layers here.
-    
     glUseProgram(lineProgram);
     glUniformMatrix4fv(lineModelViewUniform, 1, 0, modelViewProjectionMatrix.m);
     
@@ -184,8 +211,16 @@
         }
         [overlay draw];
     }
+    glUseProgram(radarProgram);
+    glUniformMatrix4fv(radarModelViewUniform, 1, 0, modelViewProjectionMatrix.m);
     
-    // render line layers here
+    
+    for(RadarLayer * overlay in radarLayers){
+        if(![overlay isSetup]){
+            [overlay setup];
+        }
+        [overlay draw];
+    }
 }
 
 
