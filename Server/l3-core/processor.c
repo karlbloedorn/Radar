@@ -9,6 +9,32 @@
 #include <string.h>
 #include <stdint.h>
 
+typedef enum product_data_types_enum {
+     RADIAL,
+     RASTER,
+     ALPHANUMERIC
+} product_data_types;
+
+typedef struct product_types_struct {
+     uint16_t product_code;
+     uint16_t rotational_resolution;
+     uint16_t gate_interval_distance;
+     uint16_t range;
+     uint16_t levels;
+     product_data_types type;
+} product_types;
+
+product_types known_product_types[] = {
+     {
+          .product_code = 1,
+          
+     },
+     {
+          .product_code = 1,
+          .range = 4,
+     },
+};
+
 typedef struct wmo_header_struct {
      char bulletin_code[3];
      char geo_code[3];
@@ -245,7 +271,7 @@ void process(char *data) {
           load_radial(test7);
           if(test7->delta_angle != 10) {
                fprintf(stderr, "Oh no! Angle (%i) != 10: %i\n", test7->delta_angle, radial_start - start);
-               exit(1);
+               //exit(1);
           } else {
                fprintf(stderr, "Made it! %i: %i \n", test7->delta_angle, radial_start - start);
           }
@@ -256,10 +282,9 @@ void process(char *data) {
                radial_data.run = LOAD_RUN(rles[j]);
                radial_data.code = LOAD_CODE(rles[j]);
                total += radial_data.run;
-               //printf("Run: %i Code: %i\n", radial_data.run, radial_data.code);
+               printf("Run: %i Code: %i\n", radial_data.run, radial_data.code);
                radial_start++;
           }
           printf("Total: %i\n", total);
      }
 }
-
