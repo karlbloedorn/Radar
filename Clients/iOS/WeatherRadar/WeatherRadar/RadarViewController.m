@@ -98,17 +98,22 @@
     lineLayers = [[NSMutableArray alloc] init];
     radarLayers = [[NSMutableArray alloc] init];
     
-    [lineLayers addObject: [[LineLayer alloc] initWithData:[NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"state_lines" ofType:@"shp"]] andLabel: @"States"]];
+    [lineLayers addObject: [[LineLayer alloc] initWithData:[NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:
+                                                                                           @"state_lines" ofType:@"shp"]] andLabel: @"States"]];
     [lineLayers addObject: [[LineLayer alloc] initWithData:[NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"interstate_lines" ofType:@"shp"]] andLabel: @"Interstates"]];
     [lineLayers addObject: [[LineLayer alloc] initWithData:[NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"county_lines" ofType:@"shp"]] andLabel: @"Counties"]];
 
     for(LineLayer * overlay in lineLayers){
         overlay.isVisible = YES;
     }
+    NSString * testRadarFilePath0 =[[NSBundle mainBundle] pathForResource:@"level3test9" ofType:@"bin"];
+    [radarLayers addObject: [[RadarLayer alloc] initWithData:[NSData dataWithContentsOfFile:testRadarFilePath0] andLabel: @"dunno"]];
+
     
     
-    NSString * testRadarFilePath =[[NSBundle mainBundle] pathForResource:@"KTBW-new" ofType:@"bin"];
-    [radarLayers addObject: [[RadarLayer alloc] initWithData:[NSData dataWithContentsOfFile:testRadarFilePath] andLabel: @"KTBW"]];
+   /* NSString * testRadarFilePath =[[NSBundle mainBundle] pathForResource:@"KTBW-new" ofType:@"bin"];
+    [radarLayers addObject: [[RadarLayer alloc] initWithData:[NSData dataWithContentsOfFile:testRadarFilePath] andLabel: @"KTBW"]];*/
+    
 
     for(RadarLayer * overlay in radarLayers){
         overlay.isVisible = YES;

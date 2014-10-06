@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		6E262ABB19E2471E00F5BADE /* level3test8.bin in Resources */ = {isa = PBXBuildFile; fileRef = 6E262ABA19E2471E00F5BADE /* level3test8.bin */; };
+		6E262ABD19E2497000F5BADE /* level3test9.bin in Resources */ = {isa = PBXBuildFile; fileRef = 6E262ABC19E2497000F5BADE /* level3test9.bin */; };
 		6EB33AEE19DE3E6C00358C5E /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 6EB33AED19DE3E6C00358C5E /* main.m */; };
 		6EB33AF119DE3E6C00358C5E /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 6EB33AF019DE3E6C00358C5E /* AppDelegate.m */; };
 		6EB33AF419DE3E6C00358C5E /* RadarViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6EB33AF319DE3E6C00358C5E /* RadarViewController.m */; };
@@ -48,6 +50,8 @@
 		6EB33B8619DF5C6600358C5E /* radar_vertex.glsl in Resources */ = {isa = PBXBuildFile; fileRef = 6EB33B8519DF5C6600358C5E /* radar_vertex.glsl */; };
 		6EB33B8919E08F0600358C5E /* LayerSelectorViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6EB33B8819E08F0600358C5E /* LayerSelectorViewController.m */; };
 		6EB33B8C19E0D11B00358C5E /* KTBW-new.bin in Resources */ = {isa = PBXBuildFile; fileRef = 6EB33B8B19E0D11B00358C5E /* KTBW-new.bin */; };
+		6EB33B8E19E1E47E00358C5E /* KMPX_2014-10-03T04-14-00.bin in Resources */ = {isa = PBXBuildFile; fileRef = 6EB33B8D19E1E47E00358C5E /* KMPX_2014-10-03T04-14-00.bin */; };
+		6EB33B9019E1E5DA00358C5E /* KMPX_2014-09-30T03-28-00.bin in Resources */ = {isa = PBXBuildFile; fileRef = 6EB33B8F19E1E5DA00358C5E /* KMPX_2014-09-30T03-28-00.bin */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -61,6 +65,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		6E262ABA19E2471E00F5BADE /* level3test8.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = level3test8.bin; sourceTree = "<group>"; };
+		6E262ABC19E2497000F5BADE /* level3test9.bin */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = archive.macbinary; path = level3test9.bin; sourceTree = "<group>"; };
 		6EB33AE819DE3E6B00358C5E /* WeatherRadar.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WeatherRadar.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6EB33AEC19DE3E6C00358C5E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		6EB33AED19DE3E6C00358C5E /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
@@ -138,6 +144,8 @@
 		6EB33B8719E08F0600358C5E /* LayerSelectorViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LayerSelectorViewController.h; sourceTree = "<group>"; };
 		6EB33B8819E08F0600358C5E /* LayerSelectorViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LayerSelectorViewController.m; sourceTree = "<group>"; };
 		6EB33B8B19E0D11B00358C5E /* KTBW-new.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = "KTBW-new.bin"; sourceTree = "<group>"; };
+		6EB33B8D19E1E47E00358C5E /* KMPX_2014-10-03T04-14-00.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = "KMPX_2014-10-03T04-14-00.bin"; sourceTree = "<group>"; };
+		6EB33B8F19E1E5DA00358C5E /* KMPX_2014-09-30T03-28-00.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = "KMPX_2014-09-30T03-28-00.bin"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -328,6 +336,10 @@
 		6EB33B5219DE79D300358C5E /* Assets */ = {
 			isa = PBXGroup;
 			children = (
+				6E262ABC19E2497000F5BADE /* level3test9.bin */,
+				6E262ABA19E2471E00F5BADE /* level3test8.bin */,
+				6EB33B8F19E1E5DA00358C5E /* KMPX_2014-09-30T03-28-00.bin */,
+				6EB33B8D19E1E47E00358C5E /* KMPX_2014-10-03T04-14-00.bin */,
 				6EB33B8B19E0D11B00358C5E /* KTBW-new.bin */,
 				6EB33B5319DE79D300358C5E /* county_lines.shp */,
 				6EB33B5519DE79D300358C5E /* Images */,
@@ -452,10 +464,13 @@
 				6EB33B6519DE79D300358C5E /* 723-location-arrow-toolbar.png in Resources */,
 				6EB33AF719DE3E6C00358C5E /* Main.storyboard in Resources */,
 				6EB33B6C19DE79D300358C5E /* state_lines.shp in Resources */,
+				6EB33B8E19E1E47E00358C5E /* KMPX_2014-10-03T04-14-00.bin in Resources */,
 				6EB33B6719DE79D300358C5E /* 740-gear-toolbar.png in Resources */,
+				6E262ABD19E2497000F5BADE /* level3test9.bin in Resources */,
 				6EB33B8319DF5C5A00358C5E /* radar_fragment.glsl in Resources */,
 				6EB33AFC19DE3E6C00358C5E /* LaunchScreen.xib in Resources */,
 				6EB33B6119DE79D300358C5E /* county_lines.shp in Resources */,
+				6EB33B9019E1E5DA00358C5E /* KMPX_2014-09-30T03-28-00.bin in Resources */,
 				6EB33B6A19DE79D300358C5E /* 832-stack-1-toolbar@2x.png in Resources */,
 				6EB33B3519DE3F9A00358C5E /* README.txt in Resources */,
 				6EB33B6319DE79D300358C5E /* 702-share-toolbar.png in Resources */,
@@ -464,6 +479,7 @@
 				6EB33B8C19E0D11B00358C5E /* KTBW-new.bin in Resources */,
 				6EB33B8619DF5C6600358C5E /* radar_vertex.glsl in Resources */,
 				6EB33B6B19DE79D300358C5E /* interstate_lines.shp in Resources */,
+				6E262ABB19E2471E00F5BADE /* level3test8.bin in Resources */,
 				6EB33AF919DE3E6C00358C5E /* Images.xcassets in Resources */,
 				6EB33B7F19DF5C4C00358C5E /* lines_vertex.glsl in Resources */,
 				6EB33B6819DE79D300358C5E /* 740-gear-toolbar@2x.png in Resources */,

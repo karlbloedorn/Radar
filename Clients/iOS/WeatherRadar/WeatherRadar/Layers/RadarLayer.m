@@ -39,7 +39,7 @@
         
         glEnableVertexAttribArray(GLKVertexAttribColor);
         glVertexAttribPointer(GLKVertexAttribColor, 4, GL_UNSIGNED_BYTE, GL_TRUE, 0, BUFFER_OFFSET(2*sizeof(float)*triangleCount*3));
-        glDrawArrays(GL_TRIANGLES, 0, triangleCount/10 * 3);
+        glDrawArrays(GL_TRIANGLES, 0, triangleCount * 3);
     }
 }
 @end
