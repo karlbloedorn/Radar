@@ -229,14 +229,11 @@ radar_status_t create_context(RadarContext ** context){
 }
 
 radar_status_t process_level2(RadarContext * context){
-    
-    
     int offset = 0;
     float siteLatitude = 999;
     float siteLongitude = 0;
     int numberOfRangeBins = 1832;
     int numberOfRadials = 720;
-    float azimuths[numberOfRadials];
     int outputSize =  sizeof(int8_t) * numberOfRangeBins * numberOfRadials;
     int azimuthSize = numberOfRadials * sizeof(float);
     context->output.length = sizeof(RadarHeader) + azimuthSize + outputSize;
@@ -248,6 +245,8 @@ radar_status_t process_level2(RadarContext * context){
     outputHeader->each_bin_distance = 250;
 
     int8_t * data_array = (int8_t *) (context->output.data + sizeof(RadarHeader) + azimuthSize);
+    float * azimuths = (float *)(context->output.data + sizeof(RadarHeader));
+    
     if(data_array == NULL){
         SetLastError("Unable to allocate data array");
         return RADAR_NOMEM;
