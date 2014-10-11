@@ -22,13 +22,15 @@ int main(int argc, const char * argv[]) {
     create_context(&context);
 
     context->input.data = addr;
-    context->input.length= sb.st_size;
+    context->input.length = sb.st_size;
     
     
     radar_status_t status = process(context, RADAR_LEVEL2);
     if(status != RADAR_OK){
         printf("error: %s\n", context->last_error );
     }
+    int write_fd = open("output.bin", O_WRONLY|O_CREAT|O_TRUNC, S_IWUSR|S_IRUSR);
+    write(write_fd, context->output.data, context->output.length);
     
     destroy_context(context);
     

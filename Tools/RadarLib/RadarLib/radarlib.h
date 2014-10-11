@@ -20,6 +20,8 @@ typedef struct radarContext  {
 } RadarContext;
 
 typedef struct __attribute__((packed)) radarHeader  {
+    char magic[4];
+    uint8_t version;
     char callsign[4];
     int32_t scan_type;
     uint32_t scan_date; // epoch seconds. this will overflow in 2038. fix before then.
@@ -29,6 +31,7 @@ typedef struct __attribute__((packed)) radarHeader  {
     uint32_t number_of_bins;
     float first_bin_distance;
     float each_bin_distance;
+    uint32_t crc32;
 } RadarHeader;
 
 radar_status_t create_context(RadarContext ** context);

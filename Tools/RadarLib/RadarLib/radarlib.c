@@ -1,10 +1,11 @@
 #include "radarlib.h"
 #include <stdlib.h>
 #include <string.h>
+#include <zlib.h>
 #include <bzlib.h>
 
 #define VERSION_PREFIX "AR2V00"
-#define SetLastError(x) strncpy(context->last_error, x, sizeof(context->last_error));
+#define SetLastError(format, args...) snprintf(context->last_error, sizeof(context->last_error), format, ## args);
 #define CheckBounds(x) if(offset + x > context->input.length){ \
         SetLastError("Bounds check failed for offset"); \
         return RADAR_INVALID_DATA; \
@@ -102,7 +103,7 @@ radar_status_t loadVolumeHeader(VolumeHeaderFile *in, VolumeHeader *out) {
     char version[3];
     char extension[4];
     if(strncmp(VERSION_PREFIX, in->tape, sizeof(VERSION_PREFIX) - 1)) {
-        fprintf(stderr, "Failed to match prefix -%s- != -%s-!\n", in->tape, VERSION_PREFIX);
+        return RADAR_INVALID_DATA;
     }
     strncpy(version, in->version, 2);
     strncpy(extension, in->extension, 3);
@@ -113,7 +114,6 @@ radar_status_t loadVolumeHeader(VolumeHeaderFile *in, VolumeHeader *out) {
     out->version = (uint8_t)atoi(version);
     out->extension = (uint16_t)atoi(extension);
     out->datetime = (ntohl(in->date) - 1) * 86400 + (ntohl(in->time)/1000);
-    //fprintf(stderr, "%i - %i\n", ntohl(in->date), ntohl(in->time));
     return RADAR_OK;
 }
 
@@ -227,8 +227,13 @@ radar_status_t create_context(RadarContext ** context){
     *context = new_context;
     return RADAR_OK;
 }
+void init_crdf_header(RadarHeader *in) {
+    strncpy(in->magic, "CRDF", sizeof(in->magic));
+    in->version = 1;
+}
 
 radar_status_t process_level2(RadarContext * context){
+    radar_status_t status = RADAR_OK;
     int offset = 0;
     float siteLatitude = 999;
     float siteLongitude = 0;
@@ -240,6 +245,7 @@ radar_status_t process_level2(RadarContext * context){
     context->output.data = malloc(context->output.length);
     
     RadarHeader * outputHeader = (RadarHeader *)context->output.data;
+    init_crdf_header(outputHeader);
     outputHeader->number_of_bins = numberOfRangeBins;
     outputHeader->number_of_radials = numberOfRadials;
     outputHeader->each_bin_distance = 250;
@@ -255,8 +261,12 @@ radar_status_t process_level2(RadarContext * context){
     
     VolumeHeaderFile * fileHeader = (VolumeHeaderFile *) context->input.data + offset;
     VolumeHeader header;
-    loadVolumeHeader(fileHeader, &header);
+    status = loadVolumeHeader(fileHeader, &header);
     offset += sizeof(VolumeHeaderFile);
+    if(status == RADAR_INVALID_DATA) {
+        SetLastError("Invalid Level 2 archive volume header");
+        goto invalid_error;
+    }
     
     fprintf(stderr, "ICAO: %s - %i %i - %lu\n", header.icao, header.extension, header.version, header.datetime);
     
@@ -309,7 +319,6 @@ radar_status_t process_level2(RadarContext * context){
             char *messageHeaderOffset = uncompressedPointer + offset;
             MessageHeader *messageHead = ((MessageHeader *) messageHeaderOffset);
             messageHeaderLoad(messageHead);
-            //fprintf(stderr, " %i" , messageHead->messageType);
             
             if (messageHead->messageType == 31) {
                 message_offset31 += (messageHead->messageSize * 2 + 12 - 2432);
@@ -328,7 +337,7 @@ radar_status_t process_level2(RadarContext * context){
                     continue;
                 }
                 if(scan->azimuthNumber > numberOfRadials-1) {
-                    SetLastError("Azimuth number greater than number of radials-1")
+                    SetLastError("Invalid azimuth number (%i) greater than %i", scan->azimuthNumber, numberOfRadials);
                     goto invalid_error;
                 }
                 azimuths[scan->azimuthNumber] = scan->azimuthAngle;
@@ -348,7 +357,7 @@ radar_status_t process_level2(RadarContext * context){
                             uint8_t *gateOffset = (uint8_t *) (refRecordOffset + sizeof(RefRecord));
                             
                             if(ref->numGates != numberOfRangeBins) {
-                                SetLastError("Invalid number of range bins")
+                                SetLastError("Invalid number of range bins %i != %i", ref->numGates, numberOfRadials);
                                 goto invalid_error;
                             }
                             for (int k = 0; k < ref->numGates; k++) {
@@ -375,8 +384,10 @@ radar_status_t process_level2(RadarContext * context){
         }
         offset += header->chunkSize;
         free(uncompressedPointer);
-        //printf("size %i %c %c \n", header->chunkSize, header->compressedSignifier[0], header->compressedSignifier[1] );
     }
+    outputHeader->latitude = siteLatitude;
+    outputHeader->longitude = siteLongitude;
+    outputHeader->crc32 = (uint32_t)crc32(0, (unsigned char *)context->output.data + sizeof(RadarHeader), (uint)context->output.length - sizeof(RadarHeader));
     SetLastError("No error");
     return RADAR_OK;
 memory_error:

@@ -11,6 +11,7 @@
 		6EA6B62019E6122A0066ECA2 /* radarlib.c in Sources */ = {isa = PBXBuildFile; fileRef = 6EA6B61E19E6122A0066ECA2 /* radarlib.c */; };
 		6EA6B62419E7690E0066ECA2 /* KSGF_20141010_0020 in CopyFiles */ = {isa = PBXBuildFile; fileRef = 6EA6B62319E760140066ECA2 /* KSGF_20141010_0020 */; };
 		6EA6B62619E785FE0066ECA2 /* libbz2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 6EA6B62519E785FE0066ECA2 /* libbz2.dylib */; };
+		6EAAFAC919E8CACB00243453 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 6EAAFAC819E8CACB00243453 /* libz.dylib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -33,6 +34,7 @@
 		6EA6B61F19E6122A0066ECA2 /* radarlib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = radarlib.h; sourceTree = "<group>"; };
 		6EA6B62319E760140066ECA2 /* KSGF_20141010_0020 */ = {isa = PBXFileReference; lastKnownFileType = file; path = KSGF_20141010_0020; sourceTree = "<group>"; };
 		6EA6B62519E785FE0066ECA2 /* libbz2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libbz2.dylib; path = usr/lib/libbz2.dylib; sourceTree = SDKROOT; };
+		6EAAFAC819E8CACB00243453 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -40,6 +42,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6EAAFAC919E8CACB00243453 /* libz.dylib in Frameworks */,
 				6EA6B62619E785FE0066ECA2 /* libbz2.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -51,6 +54,7 @@
 			isa = PBXGroup;
 			children = (
 				6EA6B62519E785FE0066ECA2 /* libbz2.dylib */,
+				6EAAFAC819E8CACB00243453 /* libz.dylib */,
 				6EA6B61619E610180066ECA2 /* RadarLib */,
 				6EA6B61519E610180066ECA2 /* Products */,
 			);
