@@ -8,6 +8,10 @@
 
 int main(int argc, const char * argv[]) {
     
+    switch(argv[1]) {
+            case 
+    }
+
     int fd = open("/Users/karlbloedorn/Desktop/Radar/Radar/Tools/RadarLib/RadarLib/KSGF_20141010_0020", O_RDONLY);
     struct stat sb;
     if (fstat(fd, &sb) == -1){

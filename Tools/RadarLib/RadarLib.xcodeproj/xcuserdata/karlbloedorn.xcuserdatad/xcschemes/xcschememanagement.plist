@@ -4,6 +4,21 @@
 <dict>
 	<key>SchemeUserState</key>
 	<dict>
+		<key>CRDFLib.xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>2</integer>
+		</dict>
+		<key>CRDFTool copy.xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>3</integer>
+		</dict>
+		<key>HeaderTest.xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>1</integer>
+		</dict>
 		<key>RadarLib.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
@@ -13,6 +28,26 @@
 	<key>SuppressBuildableAutocreation</key>
 	<dict>
 		<key>6EA6B61319E610180066ECA2</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>6EAAFACD19E8E1A100243453</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>6EAAFAD819E8E2ED00243453</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>6EAAFAE019E8E39400243453</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>6EAAFAF619E8E64700243453</key>
 		<dict>
 			<key>primary</key>
 			<true/>

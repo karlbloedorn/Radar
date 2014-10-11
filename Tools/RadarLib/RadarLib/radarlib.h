@@ -21,8 +21,10 @@ typedef struct radarContext  {
 
 typedef struct __attribute__((packed)) radarHeader  {
     char magic[4];
-    uint8_t version;
+    uint16_t version;
     char callsign[4];
+    uint8_t op_mode;
+    uint8_t radar_status;
     int32_t scan_type;
     uint32_t scan_date; // epoch seconds. this will overflow in 2038. fix before then.
     float latitude;

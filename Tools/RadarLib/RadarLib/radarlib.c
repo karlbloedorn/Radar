@@ -267,9 +267,7 @@ radar_status_t process_level2(RadarContext * context){
         SetLastError("Invalid Level 2 archive volume header");
         goto invalid_error;
     }
-    
-    fprintf(stderr, "ICAO: %s - %i %i - %lu\n", header.icao, header.extension, header.version, header.datetime);
-    
+
     strncpy(outputHeader->callsign, header.icao, 4);
     outputHeader->scan_date = (uint32_t) header.datetime;
     
