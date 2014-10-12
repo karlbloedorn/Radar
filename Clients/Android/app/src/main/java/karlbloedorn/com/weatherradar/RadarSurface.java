@@ -21,7 +21,7 @@ public class RadarSurface extends GLSurfaceView {
     private GestureDetector panDetector;
     private RadarRenderer renderer;
     public ArrayList<LineOverlay> overlays = new ArrayList<LineOverlay>();
-
+    public ArrayList<RadarOverlay> scans = new ArrayList<RadarOverlay>();
 
     float mapScale = 60;
     float centerMapY = 54;

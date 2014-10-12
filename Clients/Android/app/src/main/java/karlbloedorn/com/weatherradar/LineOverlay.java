@@ -32,6 +32,7 @@ public class LineOverlay {
             myBuffer.position(0);
             myBuffer.put(lineData);
             myBuffer.position(0);
+            lineDataStream.close();
             bufferedFilestream.close();
             filestream.close();
         }catch(IOException e){
