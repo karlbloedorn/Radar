@@ -41,4 +41,5 @@ dependencies {
     compile files('libs/guava-18.0.jar')
     compile 'com.crashlytics.android:crashlytics:1.+'
     compile 'com.joanzapata.android:android-iconify:1.0.6'
+    compile 'com.google.android.gms:play-services:5.+'
 }

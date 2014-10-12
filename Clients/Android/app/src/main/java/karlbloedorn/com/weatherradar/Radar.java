@@ -5,13 +5,14 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
-import android.opengl.GLSurfaceView;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.EditText;
 
 import com.crashlytics.android.Crashlytics;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
 import com.joanzapata.android.iconify.IconDrawable;
 import com.joanzapata.android.iconify.Iconify;
 
@@ -22,7 +23,7 @@ public class Radar extends Activity {
 
     private RadarSurface surfaceView;
     private SharedPreferences preferences;
-
+    private AdView bannerAd;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         preferences = getSharedPreferences("FilterLayers", Context.MODE_PRIVATE);
@@ -36,9 +37,20 @@ public class Radar extends Activity {
         surfaceView.overlays.add(new LineOverlay(this.getResources().openRawResource(R.raw.county_lines), "Counties"));
         surfaceView.overlays.add(new LineOverlay(this.getResources().openRawResource(R.raw.interstate_lines), "Interstates"));
 
+        surfaceView.scans.add( new RadarOverlay(this.getResources().openRawResource(R.raw.testfile2), "Test"));
+
         for(LineOverlay overlay : surfaceView.overlays){
            overlay.render =  preferences.getBoolean(overlay.description, overlay.description == "Counties" ? false: true);
         }
+        bannerAd = (AdView) findViewById(R.id.bottom_ad);
+        bannerAd.setBackgroundColor(Color.BLACK);
+
+        AdRequest adRequest = new AdRequest.Builder()
+                .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
+                .addTestDevice("DBDE8F9AADA20785E6ABC3201EFF0E2C")
+                .build();
+       // AdRequest adRequest = new AdRequest.Builder().addTestDevice(AdRequest.DEVICE_ID_EMULATOR).build();
+        bannerAd.loadAd(adRequest);
     }
 
     @Override
@@ -113,5 +125,27 @@ public class Radar extends Activity {
         builder.show();
     }
 
+    @Override
+    public void onPause() {
+        if (bannerAd != null) {
+            bannerAd.pause();
+        }
+        super.onPause();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (bannerAd != null) {
+            bannerAd.resume();
+        }
+    }
+    @Override
+    public void onDestroy() {
+        if (bannerAd != null) {
+            bannerAd.destroy();
+        }
+        super.onDestroy();
+    }
 
 }

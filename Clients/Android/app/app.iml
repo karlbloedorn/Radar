@@ -81,6 +81,7 @@
     <orderEntry type="jdk" jdkName="Android API 20 Platform" jdkType="Android SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" exported="" name="crashlytics-1.1.13" level="project" />
+    <orderEntry type="library" exported="" name="play-services-5.2.08" level="project" />
     <orderEntry type="library" exported="" name="support-v4-20.0.0" level="project" />
     <orderEntry type="library" exported="" name="guava-18.0" level="project" />
     <orderEntry type="library" exported="" name="android-iconify-1.0.6" level="project" />

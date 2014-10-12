@@ -8,10 +8,8 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 
 public class LineOverlay {
-    final int VERTEX_POS_SIZE = 2;
     private int [] vbos = new int[1];
     public String description = "";
     public int lineCount;
@@ -34,6 +32,7 @@ public class LineOverlay {
             myBuffer.position(0);
             myBuffer.put(lineData);
             myBuffer.position(0);
+            lineDataStream.close();
             bufferedFilestream.close();
             filestream.close();
         }catch(IOException e){
@@ -42,7 +41,7 @@ public class LineOverlay {
     }
     public void Setup()
     {
-        setup = true;
+       setup = true;
        myBuffer.position(0);
        GLES20.glGenBuffers(1, vbos, 0);
        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbos[0]);
