@@ -15,6 +15,7 @@ typedef struct radarContext  {
     RadarBuffer input;
     RadarBuffer output;
     RadarBuffer compressed_output;
+    RadarBuffer triangle_output;
     char last_error[255];
     radar_format_t format;
 } RadarContext;
