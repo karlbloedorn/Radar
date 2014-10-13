@@ -5,7 +5,6 @@ import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.Charset;
 
 public class RadarOverlay {
 
@@ -29,17 +28,22 @@ public class RadarOverlay {
             int scan_date = radarDataStream.readInt(); // epoch seconds. this will overflow in 2038. fix before then.
             float latitude = radarDataStream.readFloat();
             float longitude = radarDataStream.readFloat();
-            long number_of_radials = radarDataStream.readInt() & 0xFFFF;
-            long number_of_bins = radarDataStream.readInt() & 0xFFFF;
+            int number_of_radials = radarDataStream.readInt() & 0xFFFF;
+            int number_of_bins = radarDataStream.readInt() & 0xFFFF;
             float first_bin_distance = radarDataStream.readFloat();
             float each_bin_distance= radarDataStream.readFloat();
             long crc32 = radarDataStream.readInt() & 0xFFFF;
+            float[] azimuths = new float[number_of_radials];
 
-
-
-
-
-
+            for (int i = 0; i < azimuths.length; i++){
+                azimuths[i] = radarDataStream.readFloat();
+            }
+            int[][] data_array = new int[number_of_radials][number_of_bins];
+            for(int i = 0; i < number_of_radials; i++){
+                for(int j = 0; j < number_of_bins; j++){
+                    data_array[i][j] = radarDataStream.readByte();
+                }
+            }
             radarDataStream.close();
             bufferedFilestream.close();
             filestream.close();

@@ -37,7 +37,7 @@ public class Radar extends Activity {
         surfaceView.overlays.add(new LineOverlay(this.getResources().openRawResource(R.raw.county_lines), "Counties"));
         surfaceView.overlays.add(new LineOverlay(this.getResources().openRawResource(R.raw.interstate_lines), "Interstates"));
 
-        surfaceView.scans.add( new RadarOverlay(this.getResources().openRawResource(R.raw.testfile2), "Test"));
+        surfaceView.scans.add( new RadarOverlay(this.getResources().openRawResource(R.raw.testfile3), "Test"));
 
         for(LineOverlay overlay : surfaceView.overlays){
            overlay.render =  preferences.getBoolean(overlay.description, overlay.description == "Counties" ? false: true);
