@@ -388,6 +388,9 @@ radar_status_t process_level2(RadarContext * context){
     outputHeader->crc32 = (uint32_t)crc32(0, (unsigned char *)context->output.data + sizeof(RadarHeader), (uint)context->output.length - sizeof(RadarHeader));
     SetLastError("No error");
     
+    for (int i = 0; i < outputHeader->number_of_radials; i++) {
+        azimuths[i] = htonf(azimuths[i]);
+    }
     
     outputHeader->longitude = htonf(outputHeader->longitude);
     outputHeader->latitude = htonf(outputHeader->latitude);
@@ -396,8 +399,8 @@ radar_status_t process_level2(RadarContext * context){
     outputHeader->scan_date = htonl(outputHeader->scan_date);
     outputHeader->number_of_bins = htonl(outputHeader->number_of_bins);
     outputHeader->number_of_radials = htonl(outputHeader->number_of_radials);
-    outputHeader->first_bin_distance = htonl(outputHeader->first_bin_distance);
-    outputHeader->each_bin_distance = htonl(outputHeader->each_bin_distance);
+    outputHeader->first_bin_distance = htonf(outputHeader->first_bin_distance);
+    outputHeader->each_bin_distance = htonf(outputHeader->each_bin_distance);
     outputHeader->crc32 = htonl(outputHeader->crc32);
     return RADAR_OK;
 memory_error:
