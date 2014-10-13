@@ -2,6 +2,7 @@
 #define __RadarLib__radarlib__
 
 #include <stdio.h>
+#include <stdint.h>
 
 typedef enum { RADAR_LEVEL2, RADAR_LEVEL3 } radar_format_t;
 typedef enum { RADAR_NOMEM, RADAR_INVALID_DATA, RADAR_NOT_IMPLEMENTED, RADAR_OK } radar_status_t;
