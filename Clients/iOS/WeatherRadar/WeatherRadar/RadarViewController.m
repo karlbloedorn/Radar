@@ -106,7 +106,7 @@
     for(LineLayer * overlay in lineLayers){
         overlay.isVisible = YES;
     }
-    NSString * testRadarFilePath0 =[[NSBundle mainBundle] pathForResource:@"level3test9" ofType:@"bin"];
+    NSString * testRadarFilePath0 =[[NSBundle mainBundle] pathForResource:@"testfile3" ofType:@"bin"];
     [radarLayers addObject: [[RadarLayer alloc] initWithData:[NSData dataWithContentsOfFile:testRadarFilePath0] andLabel: @"dunno"]];
 
     
@@ -209,6 +209,7 @@
 
     glUseProgram(lineProgram);
     glUniformMatrix4fv(lineModelViewUniform, 1, 0, modelViewProjectionMatrix.m);
+    
     
     for(LineLayer * overlay in lineLayers){
         if(![overlay isSetup]){

@@ -7,7 +7,10 @@
 //
 
 #import "RadarLayer.h"
+#import "radarparser.h"
+
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
+
 
 @implementation RadarLayer{
     GLuint vbo;
@@ -15,11 +18,30 @@
     NSData * vertexData;
 }
 
+
 -(instancetype) initWithData:(NSData *) data andLabel:(NSString *) label{
     self = [super init];
     if(self){
+
+        
         self.label = label;
-        vertexData = data;
+        
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            vertexData = data;
+
+            NSDate *date = [NSDate date];
+            parse([vertexData bytes]);
+            double timePassed_ms = [date timeIntervalSinceNow] * -1000.0;
+            
+            dispatch_async(dispatch_get_main_queue(), ^{
+                UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Time" message:[NSString stringWithFormat: @"time: %f for length data: %lu", timePassed_ms, (unsigned long)[vertexData length]] delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+                [alert show];
+            });
+            
+        });
+        
+        
+        
     }
     return self;
 }

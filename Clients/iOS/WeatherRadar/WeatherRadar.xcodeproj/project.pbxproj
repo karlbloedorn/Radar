@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		6E19A66819ECDBD70007EEF8 /* testfile3.bin in Resources */ = {isa = PBXBuildFile; fileRef = 6E19A66719ECDBD70007EEF8 /* testfile3.bin */; };
+		6E19A66B19ECDE320007EEF8 /* radarparser.c in Sources */ = {isa = PBXBuildFile; fileRef = 6E19A66919ECDE320007EEF8 /* radarparser.c */; };
 		6E262ABB19E2471E00F5BADE /* level3test8.bin in Resources */ = {isa = PBXBuildFile; fileRef = 6E262ABA19E2471E00F5BADE /* level3test8.bin */; };
 		6E262ABD19E2497000F5BADE /* level3test9.bin in Resources */ = {isa = PBXBuildFile; fileRef = 6E262ABC19E2497000F5BADE /* level3test9.bin */; };
 		6EB33AEE19DE3E6C00358C5E /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 6EB33AED19DE3E6C00358C5E /* main.m */; };
@@ -65,6 +67,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		6E19A66719ECDBD70007EEF8 /* testfile3.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = testfile3.bin; sourceTree = "<group>"; };
+		6E19A66919ECDE320007EEF8 /* radarparser.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = radarparser.c; sourceTree = "<group>"; };
+		6E19A66A19ECDE320007EEF8 /* radarparser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = radarparser.h; sourceTree = "<group>"; };
 		6E262ABA19E2471E00F5BADE /* level3test8.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = level3test8.bin; sourceTree = "<group>"; };
 		6E262ABC19E2497000F5BADE /* level3test9.bin */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = archive.macbinary; path = level3test9.bin; sourceTree = "<group>"; };
 		6EB33AE819DE3E6B00358C5E /* WeatherRadar.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WeatherRadar.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -336,6 +341,7 @@
 		6EB33B5219DE79D300358C5E /* Assets */ = {
 			isa = PBXGroup;
 			children = (
+				6E19A66719ECDBD70007EEF8 /* testfile3.bin */,
 				6E262ABC19E2497000F5BADE /* level3test9.bin */,
 				6E262ABA19E2471E00F5BADE /* level3test8.bin */,
 				6EB33B8F19E1E5DA00358C5E /* KMPX_2014-09-30T03-28-00.bin */,
@@ -375,6 +381,8 @@
 				6EB33B7319DF27F100358C5E /* LineLayer.m */,
 				6EB33B7519DF27F800358C5E /* RadarLayer.h */,
 				6EB33B7619DF27F800358C5E /* RadarLayer.m */,
+				6E19A66919ECDE320007EEF8 /* radarparser.c */,
+				6E19A66A19ECDE320007EEF8 /* radarparser.h */,
 			);
 			path = Layers;
 			sourceTree = "<group>";
@@ -475,6 +483,7 @@
 				6EB33B3519DE3F9A00358C5E /* README.txt in Resources */,
 				6EB33B6319DE79D300358C5E /* 702-share-toolbar.png in Resources */,
 				6EB33B6419DE79D300358C5E /* 702-share-toolbar@2x.png in Resources */,
+				6E19A66819ECDBD70007EEF8 /* testfile3.bin in Resources */,
 				6EB33B6919DE79D300358C5E /* 832-stack-1-toolbar.png in Resources */,
 				6EB33B8C19E0D11B00358C5E /* KTBW-new.bin in Resources */,
 				6EB33B8619DF5C6600358C5E /* radar_vertex.glsl in Resources */,
@@ -506,6 +515,7 @@
 				6EB33AEE19DE3E6C00358C5E /* main.m in Sources */,
 				6EB33B7419DF27F100358C5E /* LineLayer.m in Sources */,
 				6EB33B8919E08F0600358C5E /* LayerSelectorViewController.m in Sources */,
+				6E19A66B19ECDE320007EEF8 /* radarparser.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
