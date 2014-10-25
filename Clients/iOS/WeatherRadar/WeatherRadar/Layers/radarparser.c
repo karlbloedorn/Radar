@@ -9,37 +9,40 @@
 #include "radarparser.h"
 #include <math.h>
 #include <sys/time.h>
+#include <pthread.h>
+
 #define RADIUS_OF_EARTH 6371000.0
 
-void parse(char * pointer){
-    int offset = 0;
-    RadarHeader * header = (RadarHeader *)(pointer + offset);
-    printf("%c%c%c%c\n", header->callsign[0], header->callsign[1],header->callsign[2],header->callsign[3]);
-    
-    
-    header->each_bin_distance = ntohf(header->each_bin_distance);
-    header->first_bin_distance = ntohf(header->first_bin_distance);
-    header->latitude = ntohf(header->latitude);
-    header->longitude = ntohf(header->longitude);
-    header->number_of_bins = ntohl(header->number_of_bins);
-    header->number_of_radials = ntohl(header->number_of_radials);
-    
-    float siteLatitude = header->latitude;
-    float siteLongitude = header->longitude;
-    
-    offset += sizeof(RadarHeader);
-    
-    float * azimuths = (float *)( pointer +offset);
-    offset += sizeof(float) * header->number_of_radials;
-    
-    int8_t * data = (int8_t *) (pointer + offset);
-    GateCoordinates gateCoordin;
+typedef struct processThreadArgs {
+    int startAzimuth;
+    int endAzimuth;
+    int8_t * data;
+    GateCoordinates * curgateCoordinates;
+    RadarHeader * header;
+    float * azimuths;
+} ProcessThreadArgs;
 
-    GateCoordinates * curgateCoordinates = &gateCoordin;
-
+void *process_radial_subset(void * input) {
+    ProcessThreadArgs * args = input;
+    int8_t * data  = args->data;
+    GateCoordinates * curgateCoordinates = args->curgateCoordinates;
+    RadarHeader * header = args->header;
+    float * azimuths = args->azimuths;
+    
+    int gates = 0;
+    for (int i = args->startAzimuth; i < args->endAzimuth; i++) {
+        for (int j = 0; j < header->number_of_bins; j++) {
+            int8_t cur = data[i*header->number_of_bins + j];
+            if(cur > 0){
+                gates++;
+            }
+        }
+    }
+    printf("startAzimuth: %i: %i, %f MB\n",args->startAzimuth,gates, (gates*4*3*6 )/1024.0/1024.0 );
     
     
-    for (int i = 0; i < header->number_of_radials; i++) {
+    
+    for (int i = args->startAzimuth; i < args->endAzimuth; i++) {
         for (int j = 0; j < header->number_of_bins; j++) {
             
             int8_t cur = data[i*header->number_of_bins + j];
@@ -56,13 +59,13 @@ void parse(char * pointer){
             float distEnd = header->first_bin_distance + j+1*header->each_bin_distance;;
             
             VertexPosition topLeft;
-            moveWithBearing(siteLatitude, siteLongitude, distEnd, azimuthAfter, &topLeft.y, &topLeft.x);
+            moveWithBearing(header->latitude, header->longitude, distEnd, azimuthAfter, &topLeft.y, &topLeft.x);
             VertexPosition topRight;
-            moveWithBearing(siteLatitude, siteLongitude, distEnd, azimuth,  &topRight.y, &topRight.x);
+            moveWithBearing(header->latitude, header->longitude, distEnd, azimuth,  &topRight.y, &topRight.x);
             VertexPosition bottomRight;
-            moveWithBearing(siteLatitude, siteLongitude, distBegin, azimuth, &bottomRight.y, &bottomRight.x);
+            moveWithBearing(header->latitude, header->longitude, distBegin, azimuth, &bottomRight.y, &bottomRight.x);
             VertexPosition bottomLeft;
-            moveWithBearing(siteLatitude, siteLongitude, distBegin, azimuthAfter, &bottomLeft.y, &bottomLeft.x);
+            moveWithBearing(header->latitude, header->longitude, distBegin, azimuthAfter, &bottomLeft.y, &bottomLeft.x);
             
             projectLongitudeMercator(topLeft.x,      &curgateCoordinates->positions[0].x);
             projectLatitudeMercator(topLeft.y,  &curgateCoordinates->positions[0].y);
@@ -80,7 +83,67 @@ void parse(char * pointer){
             
         }
     }
+    return NULL;
+    
 }
+
+
+void parse(char * pointer, int splits) {
+    int offset = 0;
+    RadarHeader * header = (RadarHeader *)(pointer + offset);
+    printf("%c%c%c%c\n", header->callsign[0], header->callsign[1],header->callsign[2],header->callsign[3]);
+    
+    
+    header->each_bin_distance = ntohf(header->each_bin_distance);
+    header->first_bin_distance = ntohf(header->first_bin_distance);
+    header->latitude = ntohf(header->latitude);
+    header->longitude = ntohf(header->longitude);
+    header->number_of_bins = ntohl(header->number_of_bins);
+    header->number_of_radials = ntohl(header->number_of_radials);
+    
+    
+    offset += sizeof(RadarHeader);
+    
+    float * azimuths = (float *)( pointer +offset);
+    offset += sizeof(float) * header->number_of_radials;
+    
+    int8_t * data = (int8_t *) (pointer + offset);
+    GateCoordinates gateCoordin;
+    
+    GateCoordinates * curgateCoordinates = &gateCoordin;
+
+    pthread_t threads[splits];
+    ProcessThreadArgs thread_args[splits];
+    
+    
+    int split_size = header->number_of_radials / splits;
+    
+    for (int i = 0; i < splits; i++) {
+        thread_args[i].startAzimuth = i*split_size;
+        if(splits - 1 == i){
+            // last thread
+            thread_args[i].endAzimuth = header->number_of_radials - 1;
+        } else {
+            thread_args[i].endAzimuth = (i+1) * split_size - 1;
+        }
+        printf("split: %i %i\n", thread_args[i].startAzimuth, thread_args[i].endAzimuth);
+        
+        thread_args[i].data = data;
+        thread_args[i].curgateCoordinates = curgateCoordinates;
+        thread_args[i].header = header;
+        thread_args[i].azimuths = azimuths;
+        pthread_create(&threads[i], NULL, process_radial_subset, &thread_args[i]);
+    }
+    
+    for (int i = 0; i < splits; i++) {
+        pthread_join(threads[i], NULL);
+    }
+}
+
+
+
+
+
 
 float ntohf(float input)
 {

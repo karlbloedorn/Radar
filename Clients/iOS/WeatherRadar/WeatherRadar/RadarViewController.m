@@ -220,13 +220,14 @@
     glUseProgram(radarProgram);
     glUniformMatrix4fv(radarModelViewUniform, 1, 0, modelViewProjectionMatrix.m);
     
+    /*
     
     for(RadarLayer * overlay in radarLayers){
         if(![overlay isSetup]){
             [overlay setup];
         }
         [overlay draw];
-    }
+    }*/
 }
 
 

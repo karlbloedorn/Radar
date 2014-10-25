@@ -36,7 +36,7 @@ typedef struct gateCoordinatesStruct {
     VertexPosition positions[6];
 } GateCoordinates;
 
-void parse(char * pointer);
+void parse(char * pointer, int splits);
 float ntohf(float input);
 float htonf(float input);
 void moveWithBearing(float originLatitude, float originLongitude,
