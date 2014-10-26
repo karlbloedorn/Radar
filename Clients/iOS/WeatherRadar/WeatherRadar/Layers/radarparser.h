@@ -11,10 +11,10 @@
 
 #include <stdio.h>
 
-typedef struct vertexPositionStruct {
-    float x;
-    float y;
-} VertexPosition;
+typedef struct scaleBucketStruct {
+    float dbz;
+    int range[6];
+} ScaleBucket;
 
 typedef struct __attribute__((packed)) radarHeader  {
     char magic[4];
@@ -32,6 +32,21 @@ typedef struct __attribute__((packed)) radarHeader  {
     float each_bin_distance;
     uint32_t crc32;
 } RadarHeader;
+
+typedef struct vertexColorStruct {
+    uint8_t r;
+    uint8_t g;
+    uint8_t b;
+    uint8_t a;
+} VertexColor;
+typedef struct gateColorsStruct {
+    VertexColor colors[6];
+} GateColors;
+
+typedef struct vertexPositionStruct {
+    float x;
+    float y;
+} VertexPosition;
 typedef struct gateCoordinatesStruct {
     VertexPosition positions[6];
 } GateCoordinates;
@@ -42,7 +57,7 @@ float htonf(float input);
 void moveWithBearing(float originLatitude, float originLongitude,
                      float distanceMeters, float bearingDegrees,
                      float *outLatitude, float *outLongitude);
-void projectLatitudeMercator(double latitude, float *projectedLatitude);
-void projectLongitudeMercator(double longitude, float *projectedLongitude);
+double projectLatitudeMercator(double latitude);
+double projectLongitudeMercator(double longitude);
 
 #endif

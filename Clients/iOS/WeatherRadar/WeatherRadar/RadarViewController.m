@@ -132,15 +132,15 @@
 
     [EAGLContext setCurrentContext:self.context];
     
-    lineProgram = [self loadShadersWithVertPath:@"lines_vertex" andFragPath: @"lines_fragment" andColorEnabled:NO];
-    radarProgram = [self loadShadersWithVertPath:@"radar_vertex" andFragPath: @"radar_fragment" andColorEnabled:YES];
+    //lineProgram = [self loadShadersWithVertPath:@"lines_vertex" andFragPath: @"lines_fragment" andColorEnabled:NO];
+    //radarProgram = [self loadShadersWithVertPath:@"radar_vertex" andFragPath: @"radar_fragment" andColorEnabled:YES];
     
-    lineModelViewUniform = glGetUniformLocation(lineProgram, "modelViewProjectionMatrix");
-   radarModelViewUniform = glGetUniformLocation(radarProgram, "modelViewProjectionMatrix");
+    //lineModelViewUniform = glGetUniformLocation(lineProgram, "modelViewProjectionMatrix");
+   //radarModelViewUniform = glGetUniformLocation(radarProgram, "modelViewProjectionMatrix");
 
-    CADisplayLink* displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(render:)];
-    displayLink.frameInterval = 1;
-    [displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
+//    CADisplayLink* displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(render:)];
+//    displayLink.frameInterval = 1;
+//    [displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
 }
 
 -(void) sharePressed: (id) sender{
