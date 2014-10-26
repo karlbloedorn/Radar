@@ -51,12 +51,20 @@ typedef struct gateCoordinatesStruct {
     VertexPosition positions[6];
 } GateCoordinates;
 
-void parse(char * pointer, int splits);
+float parse(char * pointer, int splits);
 float ntohf(float input);
 float htonf(float input);
-void moveWithBearing(float originLatitude, float originLongitude,
-                     float distanceMeters, float bearingDegrees,
-                     float *outLatitude, float *outLongitude);
+void moveWithBearing(float lon1,
+                     float sinLatitude,
+                     float cosLatitude,
+                     float * outLatitude,
+                     float * outLongitude,
+                     double cosBearing,
+                     double sinBearing,
+                     double dist,
+                     double cosDist,
+                     double sinDist
+                     );
 double projectLatitudeMercator(double latitude);
 double projectLongitudeMercator(double longitude);
 

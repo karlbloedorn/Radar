@@ -13,12 +13,18 @@
 #include <stdlib.h>
 
 #define RADIUS_OF_EARTH 6378137
+const double degrees90 = 90* M_PI / 180.0;
+const double degrees360 = 360* M_PI / 180.0;
+const double degrees180 = M_PI;
+
+
+
+
+
 
 typedef struct processThreadArgs {
-    //int startAzimuth;
-    //int endAzimuth;
-    int threadID;
-    int threadCount;
+    pthread_mutex_t * lock;
+    int * curAzimuth;
     int8_t * data;
     RadarHeader * header;
     float * azimuths;
@@ -28,6 +34,27 @@ typedef struct processThreadArgs {
 } ProcessThreadArgs;
 
 void *process_radial_subset(void * input) {
+    ProcessThreadArgs * args = input;
+    int8_t * data  = args->data;
+    RadarHeader * header = args->header;
+    float * azimuths = args->azimuths;
+    
+    double cosBearing[header->number_of_radials];
+    double sinBearing[header->number_of_radials];
+    double dist[header->number_of_bins+1];
+    double cosDist[header->number_of_bins+1];
+    double sinDist[header->number_of_bins+1];
+    
+    for(int i = 0; i < header->number_of_radials; i++){
+        double azimuthRadians = azimuths[i]* M_PI / 180;
+        cosBearing[i] = cos(azimuthRadians);
+        sinBearing[i] = sin(azimuthRadians);
+    }
+    for(int i = 0; i < header->number_of_bins+1; i++){
+        dist[i] = (header->first_bin_distance + i*header->each_bin_distance )/ (RADIUS_OF_EARTH);
+        cosDist[i] = cos(dist[i]);
+        sinDist[i] = sin(dist[i]);
+    }
     
     ScaleBucket buckets[9];
     
@@ -94,16 +121,20 @@ void *process_radial_subset(void * input) {
     
     
     
-    ProcessThreadArgs * args = input;
-    int8_t * data  = args->data;
-    RadarHeader * header = args->header;
-    float * azimuths = args->azimuths;
+
     
-    for( int i = args->threadID; i < header->number_of_radials;i+= args->threadCount){
-    //for (int i = 0; i < header->number_of_radials; i++) {
-        //if( (i %  args->threadCount) != args->threadID ){
-        //    continue;
-        //}
+    while(1){
+        // critical section
+        pthread_mutex_lock(args->lock);
+        int i = *args->curAzimuth;
+        *args->curAzimuth = i+1;
+        pthread_mutex_unlock(args->lock);
+
+        // end critical section
+        if ( i >= header->number_of_radials){
+            break;
+        }
+        
         int gateCount = 0;
         for (int j = 0; j < header->number_of_bins; j++) {
             int8_t cur = data[i*header->number_of_bins + j];
@@ -114,21 +145,20 @@ void *process_radial_subset(void * input) {
         args->color_pointers[i] = malloc(gateCount*sizeof(GateColors));
         args->position_pointers[i] = malloc(gateCount*sizeof(GateCoordinates));
         args->gate_counts[i] = gateCount;
-    }
-    //printf("startAzimuth: %i: %i, %f MB\n",args->startAzimuth,gates, (gates*4*3*6 )/1024.0/1024.0 );
-    
-    for( int i = args->threadID; i < header->number_of_radials;i+= args->threadCount){
-    //for (int i = 0; < header->number_of_radials; i++) {
-        //if( (i %  args->threadCount) != args->threadID ){
-        //    continue;
-        //}
-        int gateCount = 0;
+
+        gateCount = 0;
         int azimuthNumberAfter = i+1;
         if (azimuthNumberAfter == header->number_of_radials) {
             azimuthNumberAfter = 0;
         }
+        
+        /*
         float azimuth = azimuths[i];
         float azimuthAfter = azimuths[azimuthNumberAfter];
+        
+        float azimuthRadians = azimuth * M_PI / 180;
+        float azimuthAfterRadians = azimuthAfter * M_PI / 180;*/
+        
         for (int j = 0; j < header->number_of_bins; j++) {
             
             int8_t cur = data[i*header->number_of_bins + j];
@@ -136,16 +166,71 @@ void *process_radial_subset(void * input) {
                 continue;
             }
             
-            float distBegin = header->first_bin_distance + j*header->each_bin_distance;
-            float distEnd = header->first_bin_distance + (j+1)*header->each_bin_distance;;
+            //float distBegin = header->first_bin_distance + j*header->each_bin_distance;
+            //float distEnd = header->first_bin_distance + (j+1)*header->each_bin_distance;
+            
+            
+            
             VertexPosition topLeft;
             VertexPosition topRight;
             VertexPosition bottomRight;
             VertexPosition bottomLeft;
-            moveWithBearing(header->latitude, header->longitude, distEnd, azimuthAfter, &topLeft.y, &topLeft.x);
-            moveWithBearing(header->latitude, header->longitude, distEnd, azimuth,  &topRight.y, &topRight.x);
-            moveWithBearing(header->latitude, header->longitude, distBegin, azimuth, &bottomRight.y, &bottomRight.x);
-            moveWithBearing(header->latitude, header->longitude, distBegin, azimuthAfter, &bottomLeft.y, &bottomLeft.x);
+            
+            
+            /*
+             (float originLatitude,
+             float originLongitude,
+             float * outLatitude,
+             float * outLongitude,
+             double cosBearing,
+             double sinBearing,
+             double dist,
+             double cosDist,
+             double sinDist*/
+            
+            /*
+            moveWithBearing(header->latitude,
+                            header->longitude,
+                            &topLeft.y,
+                            &topLeft.x,
+                            cosBearing[azimuthNumberAfter],
+                            sinBearing[azimuthNumberAfter],
+                            dist[j+1],
+                            cosDist[j+1],
+                            sinDist[j+1]);
+            
+            moveWithBearing(header->latitude,
+                            header->longitude,
+                            &topRight.y,
+                            &topRight.x,
+                            cosBearing[i],
+                            sinBearing[i],
+                            dist[j+1],
+                            cosDist[j+1],
+                            sinDist[j+1]);
+            
+            moveWithBearing(header->latitude,
+                            header->longitude,
+                            &topRight.y,
+                            &topRight.x,
+                            cosBearing[i],
+                            sinBearing[i],
+                            dist[j],
+                            cosDist[j],
+                            sinDist[j]);
+            
+            moveWithBearing(header->latitude,
+                            header->longitude,
+                            &topLeft.y,
+                            &topLeft.x,
+                            cosBearing[azimuthNumberAfter],
+                            sinBearing[azimuthNumberAfter],
+                            dist[j],
+                            cosDist[j],
+                            sinDist[j]);
+            */
+           // moveWithBearing(header->latitude, header->longitude, distBegin, azimuthRadians, &bottomRight.y, &bottomRight.x);
+           // moveWithBearing(header->latitude, header->longitude, distBegin, azimuthAfterRadians, &bottomLeft.y, &bottomLeft.x);
             GateCoordinates * curgateCoordinates = &args->position_pointers[i][gateCount];
             GateColors * curgateColors = &args->color_pointers[i][gateCount];            
             curgateCoordinates->positions[0].x = projectLongitudeMercator(topLeft.x);
@@ -170,11 +255,10 @@ void *process_radial_subset(void * input) {
         }
     }
     return NULL;
-    
 }
 
 
-void parse(char * pointer, int splits) {
+float parse(char * pointer, int splits) {
     
     int offset = 0;
     RadarHeader * header = (RadarHeader *)(pointer + offset);
@@ -186,35 +270,73 @@ void parse(char * pointer, int splits) {
     header->longitude = ntohf(header->longitude);
     header->number_of_bins = ntohl(header->number_of_bins);
     header->number_of_radials = ntohl(header->number_of_radials);
-    
-    GateCoordinates * position_pointers[header->number_of_radials];
-    GateColors * color_pointers[header->number_of_radials];
-    uint32_t gate_counts[header->number_of_radials];
     offset += sizeof(RadarHeader);
     
     float * azimuths = (float *)( pointer +offset);
     offset += sizeof(float) * header->number_of_radials;
     
+    double * cosBearing = malloc(sizeof(double)* header->number_of_radials);
+    double * sinBearing = malloc(sizeof(double)* header->number_of_radials);
+    double * dist = malloc(sizeof(double)* (header->number_of_bins +1) );
+    double * cosDist = malloc(sizeof(double)* (header->number_of_bins +1) );
+    double * sinDist = malloc(sizeof(double)* (header->number_of_bins +1) );
+    float * xCoords = malloc(sizeof(float) * ( header->number_of_radials * header->number_of_bins ));
+    float * yCoords = malloc(sizeof(float) * ( header->number_of_radials * header->number_of_bins ));
+    
+    for(int i = 0; i < header->number_of_radials; i++){
+        double azimuthRadians = ntohf(azimuths[i])* M_PI / 180;
+        cosBearing[i] = cos(azimuthRadians);
+        sinBearing[i] = sin(azimuthRadians);
+    }
+    for(int i = 0; i < header->number_of_bins+1; i++){
+        dist[i] = (header->first_bin_distance + i*header->each_bin_distance )/ (RADIUS_OF_EARTH);
+        cosDist[i] = cos(dist[i]);
+        sinDist[i] = sin(dist[i]);
+    }
+    double cosLatitude = cos( header->latitude* M_PI / 180.0 );
+    double sinLatitude = sin( header->latitude* M_PI / 180.0 );
+
+    for(int i = 0; i < header->number_of_radials; i++){
+        for(int j = 0; j < header->number_of_bins+1; j++){
+            moveWithBearing(header->longitude* M_PI / 180.0,
+                            sinLatitude,
+                            cosLatitude,
+                            yCoords + i*header->number_of_radials + j,
+                            xCoords + i*header->number_of_radials + j,
+                            cosBearing[i],
+                            sinBearing[i],
+                            dist[j],
+                            cosDist[j],
+                            sinDist[j]);
+        }
+    }
+    float a = xCoords[0]+ yCoords[0];
+    free(cosBearing);
+    free(sinBearing);
+    free(dist);
+    free(cosDist);
+    free(sinDist);
+    free(yCoords);
+    free(xCoords);
+
+    return a;
+    
+
+    GateCoordinates * position_pointers[header->number_of_radials];
+    GateColors * color_pointers[header->number_of_radials];
+    uint32_t gate_counts[header->number_of_radials];
+
+    
     int8_t * data = (int8_t *) (pointer + offset);
     pthread_t threads[splits];
     ProcessThreadArgs thread_args[splits];
     
-    //int split_size = header->number_of_radials / splits;
-    
+    int curAzimuth = 0;
+    pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
+    pthread_mutex_init(&lock, NULL);
     for (int i = 0; i < splits; i++) {
-        //thread_args[i].startAzimuth = i*split_size;
-        /*
-        if(splits - 1 == i){
-            // last thread
-            thread_args[i].endAzimuth = header->number_of_radials - 1;
-        } else {
-            thread_args[i].endAzimuth = (i+1) * split_size - 1;
-        }
-         */
-       // printf("split: %i %i\n", thread_args[i].startAzimuth, thread_args[i].endAzimuth);
-        
-        thread_args[i].threadID = i;
-        thread_args[i].threadCount = splits;
+        thread_args[i].curAzimuth = &curAzimuth;
+        thread_args[i].lock = &lock;
         thread_args[i].data = data;
         thread_args[i].header = header;
         thread_args[i].azimuths = azimuths;
@@ -227,51 +349,48 @@ void parse(char * pointer, int splits) {
     for (int i = 0; i < splits; i++) {
         pthread_join(threads[i], NULL);
     }
-    //process_radial_subset(&thread_args[0]);
-    
+
+    pthread_mutex_destroy(&lock);
+    return 0.0f;
 }
 
-float ntohf(float input)
+inline float ntohf(float input)
 {
     int32_t converted = ntohl(*((int32_t *) & input));
     return *(float *) &converted;
 }
 
-float htonf(float input)
+inline float htonf(float input)
 {
     int32_t converted = htonl(*((int32_t *) & input));
     return *(float *) &converted;
 }
 
-void moveWithBearing(float originLatitude, float originLongitude,
-                     float distanceMeters, float bearingDegrees,
-                     float *outLatitude, float *outLongitude)
-{
-    float bearing = bearingDegrees * M_PI / 180.0;
-    
-    const double distRadians = distanceMeters / (RADIUS_OF_EARTH);
-    float lat1 = originLatitude * M_PI / 180;
-    float lon1 = originLongitude * M_PI / 180;
-    float lat2 =
-    asin(sin(lat1) * cos(distRadians) +
-         cos(lat1) * sin(distRadians) * cos(bearing));
-    float lon2 = lon1 + atan2(sin(bearing) * sin(distRadians) * cos(lat1),
-                              cos(distRadians) - sin(lat1) * sin(lat2));
-    *outLatitude = lat2 * 180 / M_PI;
-    *outLongitude = lon2 * 180 / M_PI;
+inline void moveWithBearing(float lon1,
+                            float sinLatitude,
+                            float cosLatitude,
+                            float * outLatitude,
+                            float * outLongitude,
+                            double cosBearing,
+                            double sinBearing,
+                            double dist,
+                            double cosDist,
+                            double sinDist
+                            ){
+    float lat2 = asin(sinLatitude * cosDist + cosLatitude * sinDist * cosBearing);
+    float lon2 = lon1 + atan2(sinBearing * sinDist * cosLatitude, cosDist - sinLatitude * sin(lat2));
+    *outLatitude = lat2;
+    *outLongitude = lon2;
 }
 
-double projectLatitudeMercator(double latitude)
+inline double projectLatitudeMercator(double latRad)
 {
-    // convert from degrees to radians
-    float latRad = latitude * M_PI / 180;
-    
-    // get y value
+   
     float mercN = log(tan((M_PI / 4) + (latRad / 2)));
-    return 90 - (360 * mercN / (2 * M_PI));
+    return degrees90 - (degrees360 * mercN / (2 * M_PI));
 }
 
-double projectLongitudeMercator(double longitude)
+inline double projectLongitudeMercator(double longitude)
 {
-    return (longitude + 180);
+    return (longitude + degrees180);
 }

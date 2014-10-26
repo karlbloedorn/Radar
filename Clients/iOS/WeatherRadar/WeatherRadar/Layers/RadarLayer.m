@@ -29,12 +29,15 @@
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             vertexData = data;
 
+            char * bytes = malloc(data.length);
+            [vertexData getBytes:bytes length:data.length];
+            
             NSDate *date = [NSDate date];
-            parse([vertexData bytes], [[NSProcessInfo processInfo] activeProcessorCount]);
+            float a = parse(bytes, [[NSProcessInfo processInfo] activeProcessorCount]);
             double timePassed_ms = [date timeIntervalSinceNow] * -1000.0;
             
             dispatch_async(dispatch_get_main_queue(), ^{
-                UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Time" message:[NSString stringWithFormat: @"time: %f for length data: %lu", timePassed_ms, (unsigned long)[vertexData length]] delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+                UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Time" message:[NSString stringWithFormat: @"time: %f for length data: %lu val:%f", timePassed_ms, (unsigned long)[vertexData length], a] delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
                 [alert show];
             });
             
