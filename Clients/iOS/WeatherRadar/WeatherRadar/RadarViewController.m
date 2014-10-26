@@ -98,10 +98,9 @@
     lineLayers = [[NSMutableArray alloc] init];
     radarLayers = [[NSMutableArray alloc] init];
     
-    [lineLayers addObject: [[LineLayer alloc] initWithData:[NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:
-                                                                                           @"state_lines" ofType:@"shp"]] andLabel: @"States"]];
-    [lineLayers addObject: [[LineLayer alloc] initWithData:[NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"interstate_lines" ofType:@"shp"]] andLabel: @"Interstates"]];
-    [lineLayers addObject: [[LineLayer alloc] initWithData:[NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"county_lines" ofType:@"shp"]] andLabel: @"Counties"]];
+    //[lineLayers addObject: [[LineLayer alloc] initWithData:[NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource: @"state_lines" ofType:@"shp"]] andLabel: @"States"]];
+    //[lineLayers addObject: [[LineLayer alloc] initWithData:[NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"interstate_lines" ofType:@"shp"]] andLabel: @"Interstates"]];
+    //[lineLayers addObject: [[LineLayer alloc] initWithData:[NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"county_lines" ofType:@"shp"]] andLabel: @"Counties"]];
 
     for(LineLayer * overlay in lineLayers){
         overlay.isVisible = YES;
@@ -109,9 +108,7 @@
     NSString * testRadarFilePath0 =[[NSBundle mainBundle] pathForResource:@"testfile3" ofType:@"bin"];
     [radarLayers addObject: [[RadarLayer alloc] initWithData:[NSData dataWithContentsOfFile:testRadarFilePath0] andLabel: @"dunno"]];
 
-    
-    
-   /* NSString * testRadarFilePath =[[NSBundle mainBundle] pathForResource:@"KTBW-new" ofType:@"bin"];
+    /* NSString * testRadarFilePath =[[NSBundle mainBundle] pathForResource:@"KTBW-new" ofType:@"bin"];
     [radarLayers addObject: [[RadarLayer alloc] initWithData:[NSData dataWithContentsOfFile:testRadarFilePath] andLabel: @"KTBW"]];*/
     
 
@@ -124,13 +121,13 @@
     centerMapX = 78;
     
     
-    self.context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
-    if (!self.context) {
-        NSLog(@"Failed to create ES context");
-    }
-    self.radarSurface.context = self.context;
+   // self.context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
+   // if (!self.context) {
+   //     NSLog(@"Failed to create ES context");
+   // }
+   // self.radarSurface.context = self.context;
 
-    [EAGLContext setCurrentContext:self.context];
+ //   [EAGLContext setCurrentContext:self.context];
     
     //lineProgram = [self loadShadersWithVertPath:@"lines_vertex" andFragPath: @"lines_fragment" andColorEnabled:NO];
     //radarProgram = [self loadShadersWithVertPath:@"radar_vertex" andFragPath: @"radar_fragment" andColorEnabled:YES];
