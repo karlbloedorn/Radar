@@ -15,8 +15,10 @@
 #define RADIUS_OF_EARTH 6378137
 
 typedef struct processThreadArgs {
-    int startAzimuth;
-    int endAzimuth;
+    //int startAzimuth;
+    //int endAzimuth;
+    int threadID;
+    int threadCount;
     int8_t * data;
     RadarHeader * header;
     float * azimuths;
@@ -97,7 +99,11 @@ void *process_radial_subset(void * input) {
     RadarHeader * header = args->header;
     float * azimuths = args->azimuths;
     
-    for (int i = args->startAzimuth; i < args->endAzimuth; i++) {
+    for( int i = args->threadID; i < header->number_of_radials;i+= args->threadCount){
+    //for (int i = 0; i < header->number_of_radials; i++) {
+        //if( (i %  args->threadCount) != args->threadID ){
+        //    continue;
+        //}
         int gateCount = 0;
         for (int j = 0; j < header->number_of_bins; j++) {
             int8_t cur = data[i*header->number_of_bins + j];
@@ -111,7 +117,11 @@ void *process_radial_subset(void * input) {
     }
     //printf("startAzimuth: %i: %i, %f MB\n",args->startAzimuth,gates, (gates*4*3*6 )/1024.0/1024.0 );
     
-    for (int i = args->startAzimuth; i < args->endAzimuth; i++) {
+    for( int i = args->threadID; i < header->number_of_radials;i+= args->threadCount){
+    //for (int i = 0; < header->number_of_radials; i++) {
+        //if( (i %  args->threadCount) != args->threadID ){
+        //    continue;
+        //}
         int gateCount = 0;
         int azimuthNumberAfter = i+1;
         if (azimuthNumberAfter == header->number_of_radials) {
@@ -189,18 +199,22 @@ void parse(char * pointer, int splits) {
     pthread_t threads[splits];
     ProcessThreadArgs thread_args[splits];
     
-    int split_size = header->number_of_radials / splits;
+    //int split_size = header->number_of_radials / splits;
     
     for (int i = 0; i < splits; i++) {
-        thread_args[i].startAzimuth = i*split_size;
+        //thread_args[i].startAzimuth = i*split_size;
+        /*
         if(splits - 1 == i){
             // last thread
             thread_args[i].endAzimuth = header->number_of_radials - 1;
         } else {
             thread_args[i].endAzimuth = (i+1) * split_size - 1;
         }
-        printf("split: %i %i\n", thread_args[i].startAzimuth, thread_args[i].endAzimuth);
+         */
+       // printf("split: %i %i\n", thread_args[i].startAzimuth, thread_args[i].endAzimuth);
         
+        thread_args[i].threadID = i;
+        thread_args[i].threadCount = splits;
         thread_args[i].data = data;
         thread_args[i].header = header;
         thread_args[i].azimuths = azimuths;
