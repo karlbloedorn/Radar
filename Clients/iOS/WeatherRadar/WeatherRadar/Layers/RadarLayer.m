@@ -33,7 +33,7 @@
             [vertexData getBytes:bytes length:data.length];
             
             NSDate *date = [NSDate date];
-            float a = parse(bytes, [[NSProcessInfo processInfo] activeProcessorCount]);
+            float a = parse(bytes, [[NSProcessInfo processInfo] activeProcessorCount]*8);
             double timePassed_ms = [date timeIntervalSinceNow] * -1000.0;
             
             dispatch_async(dispatch_get_main_queue(), ^{
