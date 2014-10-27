@@ -48,7 +48,7 @@ void * process_projection_subset(void * input){
         data->cosDist[bin] = cos(data->dist[bin]);
         data->sinDist[bin] = sin(data->dist[bin]);
     }
-    double cosLatitude = cos( args->header->latitude* M_PI / 180.0 );
+    double cosLatitude = cos( header->latitude* M_PI / 180.0 );
     double sinLatitude = sin( header->latitude* M_PI / 180.0 );
     double radianLongitude = header->latitude* M_PI / 180.0;
 
@@ -57,14 +57,14 @@ void * process_projection_subset(void * input){
         data->cosBearing[radial] = cos(azimuthRadians);
         data->sinBearing[radial] = sin(azimuthRadians);
         
-        for(int bin = 0; bin < args->header->number_of_bins+1; bin++){
+        for(int bin = 0; bin < header->number_of_bins+1; bin++){
             
             if( data->calculate[radial*(header->number_of_bins+1)+ bin] ){
                 moveWithBearing(radianLongitude,
                             sinLatitude,
                             cosLatitude,
-                            data->yCoords + radial*header->number_of_radials + bin,
-                            data->xCoords + radial*header->number_of_radials + bin,
+                            data->yCoords + radial*header->number_of_bins + bin,
+                            data->xCoords + radial*header->number_of_bins + bin,
                             data->cosBearing[radial],
                             data->sinBearing[radial],
                             data->dist[bin],
@@ -77,7 +77,7 @@ void * process_projection_subset(void * input){
     return NULL;
 }
 
-float parse(char * pointer, int splits) {
+int parse(char * pointer, int splits) {
 
     int offset = 0;
     RadarHeader * header = (RadarHeader *)(pointer + offset);
@@ -101,15 +101,18 @@ float parse(char * pointer, int splits) {
     projectionData.dist = malloc(sizeof(double)* (header->number_of_bins +1) );
     projectionData.cosDist = malloc(sizeof(double)* (header->number_of_bins +1) );
     projectionData.sinDist = malloc(sizeof(double)* (header->number_of_bins +1) );
-    projectionData.xCoords = malloc(sizeof(float) * ( header->number_of_radials * header->number_of_bins ));
-    projectionData.yCoords = malloc(sizeof(float) * ( header->number_of_radials * header->number_of_bins ));
+    projectionData.xCoords = malloc(sizeof(float) * ( header->number_of_radials * (header->number_of_bins+1) ));
+    projectionData.yCoords = malloc(sizeof(float) * ( header->number_of_radials * (header->number_of_bins+1) ));
     projectionData.calculate = malloc (sizeof(uint8_t) * ( header->number_of_radials * (header->number_of_bins+1) ) );
     projectionData.azimuths = azimuths;
+    
+    uint32_t gate_counts[header->number_of_radials];
+    memset(gate_counts, 0, sizeof(uint32_t)*header->number_of_radials);
 
     memset(projectionData.calculate, 0, sizeof(uint8_t) * ( header->number_of_radials * (header->number_of_bins+1) ));
     
     for(int radial = 0; radial < header->number_of_radials; radial++){
-        for(int bin = 0; bin < header->number_of_bins+1; bin++){
+        for(int bin = 0; bin < header->number_of_bins; bin++){
             int8_t cur = data[radial*header->number_of_bins + bin];
             if(cur > 0){
                 int radialNumberAfter = radial+1;
@@ -122,6 +125,7 @@ float parse(char * pointer, int splits) {
                 projectionData.calculate[radial*(header->number_of_bins+1)+ bin+1] = 1;
                 projectionData.calculate[radialNumberAfter*(header->number_of_bins+1)+ bin] = 1;
                 projectionData.calculate[radialNumberAfter*(header->number_of_bins+1)+ bin+1] = 1;
+                gate_counts[radial]++;
             }
             
         }
@@ -203,7 +207,49 @@ float parse(char * pointer, int splits) {
         pthread_join(threads[i], NULL);
     }
 
-    float a = projectionData.xCoords[0]+ projectionData.yCoords[0] + projectionData.sinBearing[0] + projectionData.sinDist[0];
+    int bytes = 0;
+    
+    GateData * gateData[header->number_of_radials];
+    
+    for(int radial = 0; radial < header->number_of_radials; radial++){
+        int curGate = 0;
+
+        gateData[radial] = malloc(sizeof(GateData) * gate_counts[radial]);
+        bytes+=sizeof(GateData) * gate_counts[radial];
+        
+        for(int bin = 0; bin < header->number_of_bins; bin++){
+            int8_t cur = data[radial*header->number_of_bins + bin];
+            if(cur > 0){
+                int radialNumberAfter = radial+1;
+                if (radialNumberAfter == header->number_of_radials) {
+                    radialNumberAfter = 0;
+                }
+
+                GateData * curGateData = &gateData[radial][curGate];
+    
+                curGateData->vertices[0].position.x = projectionData.xCoords[radial*(header->number_of_bins+1) + bin+1]; //topLeft.x
+                curGateData->vertices[0].position.y = projectionData.yCoords[radial*(header->number_of_bins+1) + bin+1]; //topLeft.y
+                curGateData->vertices[1].position.x = projectionData.xCoords[radialNumberAfter*(header->number_of_bins+1)  + bin+1]; //topRight.x
+                curGateData->vertices[1].position.y = projectionData.yCoords[radialNumberAfter*(header->number_of_bins+1)  + bin+1]; //topRight.y
+                curGateData->vertices[2].position.x = projectionData.xCoords[radialNumberAfter*(header->number_of_bins+1)  + bin]; //bottomRight.x
+                curGateData->vertices[2].position.y = projectionData.yCoords[radialNumberAfter*(header->number_of_bins+1)  + bin]; //bottomRight.y
+                curGateData->vertices[3].position.x = projectionData.xCoords[radialNumberAfter*(header->number_of_bins+1)  + bin]; //bottomRight.x
+                curGateData->vertices[3].position.y = projectionData.yCoords[radialNumberAfter*(header->number_of_bins+1)  + bin]; //bottomRight.y
+                curGateData->vertices[4].position.x = projectionData.xCoords[radial*(header->number_of_bins+1)  + bin]; //bottomLeft.x
+                curGateData->vertices[4].position.y = projectionData.yCoords[radial*(header->number_of_bins+1)  + bin];//bottomLeft.y
+                curGateData->vertices[5].position.x = projectionData.xCoords[radial*(header->number_of_bins+1)  + bin+1]; //topLeft.x
+                curGateData->vertices[5].position.y = projectionData.yCoords[radial*(header->number_of_bins+1)  + bin+1]; //topLeft.y
+
+                for (int z = 0; z < 6; z++) {
+                    curGateData->vertices[z].color.r = colors[cur][0];
+                    curGateData->vertices[z].color.g = colors[cur][1];
+                    curGateData->vertices[z].color.b = colors[cur][2];
+                    curGateData->vertices[z].color.a = 255;
+                }
+                curGate++;
+            }
+        }
+    }
     free(projectionData.cosBearing);
     free(projectionData.sinBearing);
     free(projectionData.dist);
@@ -211,13 +257,7 @@ float parse(char * pointer, int splits) {
     free(projectionData.sinDist);
     free(projectionData.yCoords);
     free(projectionData.xCoords);
-    return a;
-    
-/*
-    GateCoordinates * position_pointers[header->number_of_radials];
-    GateColors * color_pointers[header->number_of_radials];
-    uint32_t gate_counts[header->number_of_radials];
-*/
+    return bytes;
 }
 
 inline float ntohf(float input)

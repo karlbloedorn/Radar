@@ -110,7 +110,6 @@
 
     /* NSString * testRadarFilePath =[[NSBundle mainBundle] pathForResource:@"KTBW-new" ofType:@"bin"];
     [radarLayers addObject: [[RadarLayer alloc] initWithData:[NSData dataWithContentsOfFile:testRadarFilePath] andLabel: @"KTBW"]];*/
-    
 
     for(RadarLayer * overlay in radarLayers){
         overlay.isVisible = YES;
