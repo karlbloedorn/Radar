@@ -39,6 +39,7 @@ typedef struct vertexColorStruct {
     uint8_t b;
     uint8_t a;
 } VertexColor;
+
 typedef struct gateColorsStruct {
     VertexColor colors[6];
 } GateColors;
@@ -47,11 +48,20 @@ typedef struct vertexPositionStruct {
     float x;
     float y;
 } VertexPosition;
+
 typedef struct gateCoordinatesStruct {
     VertexPosition positions[6];
 } GateCoordinates;
 
-float parse(char * pointer, int splits);
+typedef struct vertexData{
+    VertexPosition position;
+    VertexColor color;
+} VertexData;
+typedef struct gateData{
+    VertexData vertices[6];
+} GateData;
+
+int parse(char * pointer, int splits);
 float ntohf(float input);
 float htonf(float input);
 void moveWithBearing(float lon1,

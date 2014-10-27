@@ -44,12 +44,12 @@
 }
 -(void) setupUserInterface{
     
-    self.bannerView.adUnitID = @"ca-app-pub-5636726170867832/9790740103";
-    self.bannerView.rootViewController = self;
-    GADRequest *request = [GADRequest request];
-    request.testDevices = @[ @"372a59f601c273f3b4303f5767ac6083",@"293240ee238a2d85888393916c716aef", GAD_SIMULATOR_ID ];
+   // self.bannerView.adUnitID = @"ca-app-pub-5636726170867832/9790740103";
+   // self.bannerView.rootViewController = self;
+   // GADRequest *request = [GADRequest request];
+   // request.testDevices = @[ @"372a59f601c273f3b4303f5767ac6083",@"293240ee238a2d85888393916c716aef", GAD_SIMULATOR_ID ];
     
-    [self.bannerView loadRequest:request];
+   // [self.bannerView loadRequest:request];
     
     
     shareButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"702-share-toolbar.png"] style:UIBarButtonItemStyleDone target:self action: @selector(sharePressed:)];
@@ -110,7 +110,6 @@
 
     /* NSString * testRadarFilePath =[[NSBundle mainBundle] pathForResource:@"KTBW-new" ofType:@"bin"];
     [radarLayers addObject: [[RadarLayer alloc] initWithData:[NSData dataWithContentsOfFile:testRadarFilePath] andLabel: @"KTBW"]];*/
-    
 
     for(RadarLayer * overlay in radarLayers){
         overlay.isVisible = YES;
