@@ -77,7 +77,7 @@ void * process_projection_subset(void * input){
     return NULL;
 }
 
-int parse(char * pointer, int splits, int32_t ** gate_counts_ref, GateData *** gate_data_ref ) {
+int parse(char * pointer, int splits, int32_t ** gate_counts_ref, int32_t * radial_count_ref, GateData *** gate_data_ref ) {
 
     int offset = 0;
     RadarHeader * header = (RadarHeader *)(pointer + offset);
@@ -106,6 +106,7 @@ int parse(char * pointer, int splits, int32_t ** gate_counts_ref, GateData *** g
     projectionData.calculate = malloc (sizeof(uint8_t) * ( header->number_of_radials * (header->number_of_bins+1) ) );
     projectionData.azimuths = azimuths;
     
+    *radial_count_ref = header->number_of_radials;
     int32_t * gate_counts = malloc(sizeof(int32_t)*header->number_of_radials);
     *gate_counts_ref = gate_counts;
     //int32_t gate_counts[header->number_of_radials];
