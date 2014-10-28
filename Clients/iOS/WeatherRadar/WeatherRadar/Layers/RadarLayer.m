@@ -33,9 +33,11 @@
             [vertexData getBytes:bytes length:data.length];
             
             NSDate *date = [NSDate date];
+            int32_t radial_count_ref;
+
             int32_t * gate_counts_ref;
             GateData ** gate_data_ref;
-            int a = parse(bytes, [[NSProcessInfo processInfo] activeProcessorCount],&gate_counts_ref, &gate_data_ref);
+            int a = parse(bytes, [[NSProcessInfo processInfo] activeProcessorCount],&gate_counts_ref, &radial_count_ref, &gate_data_ref);
             double timePassed_ms = [date timeIntervalSinceNow] * -1000.0;
             
             dispatch_async(dispatch_get_main_queue(), ^{

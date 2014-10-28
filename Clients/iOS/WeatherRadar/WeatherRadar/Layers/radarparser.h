@@ -61,7 +61,7 @@ typedef struct gateData{
     VertexData vertices[6];
 } GateData;
 
-int parse(char * pointer, int splits, int32_t ** gate_counts_ref, GateData *** gate_data_ref );
+int parse(char * pointer, int splits, int32_t ** gate_counts_ref, int32_t * radial_count_ref, GateData *** gate_data_ref );
 float ntohf(float input);
 float htonf(float input);
 void moveWithBearing(float lon1,
