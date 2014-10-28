@@ -142,6 +142,11 @@ int main(int argc, const char * argv[]) {
             int32_t * gate_counts_ref;
             GateData ** gate_data_ref;
             int a = parse(input_data, suggested_concurrency, &gate_counts_ref, &radial_count_ref, &gate_data_ref);
+            for(int radial = 0; radial < radial_count_ref; radial++) {
+                 free(gate_data_ref[radial]);
+            }
+            free(gate_counts_ref);
+            free(gate_data_ref);
             printf("%i\n", a);
             break;
         default:

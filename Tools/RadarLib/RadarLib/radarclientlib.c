@@ -218,6 +218,7 @@ int parse(char * pointer, int splits, int32_t ** gate_counts_ref, int32_t * radi
      for (int i = 0; i < splits; i++) {
           pthread_join(threads[i], NULL);
      }
+     free(projectionData.calculate);
 
      int bytes = 0;
 
@@ -226,7 +227,7 @@ int parse(char * pointer, int splits, int32_t ** gate_counts_ref, int32_t * radi
      //GateData * gateData[header->number_of_radials];
      *gate_data_ref = gateData;
 
-     for(int radial = 0; radial < header->number_of_radials; radial++){
+     for(unsigned int radial = 0; radial < header->number_of_radials; radial++){
           int curGate = 0;
 
           gateData[radial] = malloc(sizeof(GateData) * gate_counts[radial]);
@@ -235,7 +236,7 @@ int parse(char * pointer, int splits, int32_t ** gate_counts_ref, int32_t * radi
           for(int bin = 0; bin < header->number_of_bins; bin++){
                int8_t cur = data[radial*header->number_of_bins + bin];
                if(cur > 0){
-                    int radialNumberAfter = radial+1;
+                    unsigned int radialNumberAfter = radial+1;
                     if (radialNumberAfter == header->number_of_radials) {
                          radialNumberAfter = 0;
                     }
