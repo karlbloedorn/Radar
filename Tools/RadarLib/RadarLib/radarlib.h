@@ -38,6 +38,10 @@ typedef struct __attribute__((packed)) radarHeader  {
     uint32_t crc32;
 } RadarHeader;
 
+float htonf(float input);
+float ntohf(float input);
+radar_status_t verifyCRC32(RadarContext *context, RadarHeader *header);
+radar_status_t loadRadarHeader(RadarContext *context, RadarHeader **out);
 radar_status_t create_context(RadarContext ** context);
 radar_status_t process(RadarContext * context, radar_format_t format);
 radar_status_t create_output_data(RadarContext * context);
