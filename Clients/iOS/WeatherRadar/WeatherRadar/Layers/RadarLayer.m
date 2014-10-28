@@ -33,11 +33,13 @@
             [vertexData getBytes:bytes length:data.length];
             
             NSDate *date = [NSDate date];
-            int a = parse(bytes, [[NSProcessInfo processInfo] activeProcessorCount]);
+            int32_t * gate_counts_ref;
+            GateData ** gate_data_ref;
+            int a = parse(bytes, [[NSProcessInfo processInfo] activeProcessorCount],&gate_counts_ref, &gate_data_ref);
             double timePassed_ms = [date timeIntervalSinceNow] * -1000.0;
             
             dispatch_async(dispatch_get_main_queue(), ^{
-                UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Time" message:[NSString stringWithFormat: @"time: %f for length data: %lu size:%f ", timePassed_ms, (unsigned long)[vertexData length], a/1024.0/1024.0] delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+                UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Time" message:[NSString stringWithFormat: @"time: %f for length data: %lu size:%i ", timePassed_ms, (unsigned long)[vertexData length], a] delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
                 [alert show];
             });
             

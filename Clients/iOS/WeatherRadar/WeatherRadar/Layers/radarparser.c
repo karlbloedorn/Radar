@@ -77,7 +77,7 @@ void * process_projection_subset(void * input){
     return NULL;
 }
 
-int parse(char * pointer, int splits) {
+int parse(char * pointer, int splits, int32_t ** gate_counts_ref, GateData *** gate_data_ref ) {
 
     int offset = 0;
     RadarHeader * header = (RadarHeader *)(pointer + offset);
@@ -106,7 +106,9 @@ int parse(char * pointer, int splits) {
     projectionData.calculate = malloc (sizeof(uint8_t) * ( header->number_of_radials * (header->number_of_bins+1) ) );
     projectionData.azimuths = azimuths;
     
-    uint32_t gate_counts[header->number_of_radials];
+    int32_t * gate_counts = malloc(sizeof(int32_t)*header->number_of_radials);
+    *gate_counts_ref = gate_counts;
+    //int32_t gate_counts[header->number_of_radials];
     memset(gate_counts, 0, sizeof(uint32_t)*header->number_of_radials);
 
     memset(projectionData.calculate, 0, sizeof(uint8_t) * ( header->number_of_radials * (header->number_of_bins+1) ));
@@ -209,7 +211,10 @@ int parse(char * pointer, int splits) {
 
     int bytes = 0;
     
-    GateData * gateData[header->number_of_radials];
+    
+    GateData ** gateData = malloc (header->number_of_radials * sizeof(GateData *));
+    //GateData * gateData[header->number_of_radials];
+    *gate_data_ref = gateData;
     
     for(int radial = 0; radial < header->number_of_radials; radial++){
         int curGate = 0;
