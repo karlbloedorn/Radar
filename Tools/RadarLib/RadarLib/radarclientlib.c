@@ -20,6 +20,14 @@ const double degrees90 = 90* M_PI / 180.0;
 const double degrees360 = 360* M_PI / 180.0;
 const double degrees180 = M_PI;
 
+#define UINT8_T_BITS 8
+#define BITMASK(b) (1 << ((b) % UINT8_T_BITS))
+#define BITSLOT(b) ((b) / UINT8_T_BITS)
+#define BITSET(a, b) ((a)[BITSLOT(b)] |= BITMASK(b))
+#define BITCLEAR(a, b) ((a)[BITSLOT(b)] &= ~BITMASK(b))
+#define BITTEST(a, b) ((a)[BITSLOT(b)] & BITMASK(b))
+#define BITNSLOTS(nb) ((nb + UINT8_T_BITS - 1) / UINT8_T_BITS)
+
 typedef struct projectionData{
      double * cosBearing;
      double * sinBearing;
@@ -57,10 +65,9 @@ void * process_projection_subset(void * input){
           double azimuthRadians = ntohf(data->azimuths[radial])* M_PI / 180;
           data->cosBearing[radial] = cos(azimuthRadians);
           data->sinBearing[radial] = sin(azimuthRadians);
-        
+
           for(int bin = 0; bin < header->number_of_bins+1; bin++){
-            
-               if( data->calculate[radial*(header->number_of_bins+1)+ bin] ){
+               if(BITTEST(data->calculate, radial*(header->number_of_bins+1)+ bin)){
                     moveWithBearing(radianLongitude,
                                     sinLatitude,
                                     cosLatitude,
@@ -73,7 +80,7 @@ void * process_projection_subset(void * input){
                                     data->sinDist[bin]);
                }
           }
-             
+
      }
      return NULL;
 }
@@ -83,7 +90,7 @@ int parse(char * pointer, int splits, int32_t ** gate_counts_ref, int32_t * radi
      int offset = 0;
      RadarHeader * header = (RadarHeader *)(pointer + offset);
      printf("%c%c%c%c\n", header->callsign[0], header->callsign[1],header->callsign[2],header->callsign[3]);
-    
+
      header->each_bin_distance = ntohf(header->each_bin_distance);
      header->first_bin_distance = ntohf(header->first_bin_distance);
      header->latitude = ntohf(header->latitude);
@@ -91,7 +98,7 @@ int parse(char * pointer, int splits, int32_t ** gate_counts_ref, int32_t * radi
      header->number_of_bins = ntohl(header->number_of_bins);
      header->number_of_radials = ntohl(header->number_of_radials);
      offset += sizeof(RadarHeader);
-    
+
      float * azimuths = (float *)( pointer +offset);
      offset += sizeof(float) * header->number_of_radials;
      int8_t * data = (int8_t *) (pointer + offset);
@@ -104,17 +111,17 @@ int parse(char * pointer, int splits, int32_t ** gate_counts_ref, int32_t * radi
      projectionData.sinDist = malloc(sizeof(double)* (header->number_of_bins +1) );
      projectionData.xCoords = malloc(sizeof(float) * ( header->number_of_radials * (header->number_of_bins+1) ));
      projectionData.yCoords = malloc(sizeof(float) * ( header->number_of_radials * (header->number_of_bins+1) ));
-     projectionData.calculate = malloc (sizeof(uint8_t) * ( header->number_of_radials * (header->number_of_bins+1) ) );
+     projectionData.calculate = malloc(sizeof(uint8_t) * BITNSLOTS((header->number_of_radials * (header->number_of_bins+1))));
      projectionData.azimuths = azimuths;
-    
+
      *radial_count_ref = header->number_of_radials;
      int32_t * gate_counts = malloc(sizeof(int32_t)*header->number_of_radials);
      *gate_counts_ref = gate_counts;
      //int32_t gate_counts[header->number_of_radials];
      memset(gate_counts, 0, sizeof(uint32_t)*header->number_of_radials);
 
-     memset(projectionData.calculate, 0, sizeof(uint8_t) * ( header->number_of_radials * (header->number_of_bins+1) ));
-    
+     memset(projectionData.calculate, 0, sizeof(uint8_t) * BITNSLOTS((header->number_of_radials * (header->number_of_bins+1))));
+
      for(int radial = 0; radial < header->number_of_radials; radial++){
           for(int bin = 0; bin < header->number_of_bins; bin++){
                int8_t cur = data[radial*header->number_of_bins + bin];
@@ -125,19 +132,20 @@ int parse(char * pointer, int splits, int32_t ** gate_counts_ref, int32_t * radi
                     }
                     // bin and bin+1
                     // radial and radialNumberAfter
-                    projectionData.calculate[radial*(header->number_of_bins+1)+ bin] = 1;
-                    projectionData.calculate[radial*(header->number_of_bins+1)+ bin+1] = 1;
-                    projectionData.calculate[radialNumberAfter*(header->number_of_bins+1)+ bin] = 1;
-                    projectionData.calculate[radialNumberAfter*(header->number_of_bins+1)+ bin+1] = 1;
+
+                    BITSET(projectionData.calculate, radial * (header->number_of_bins+1)+ bin);
+                    BITSET(projectionData.calculate, radial * (header->number_of_bins+1)+ bin+1);
+                    BITSET(projectionData.calculate, radialNumberAfter*(header->number_of_bins+1)+ bin);
+                    BITSET(projectionData.calculate, (radialNumberAfter*(header->number_of_bins+1)+ bin+1));
                     gate_counts[radial]++;
                }
-            
+
           }
      }
-    
+
      pthread_t threads[splits];
      ProjectionThreadArgs thread_args[splits];
-    
+
      for (int i = 0; i < splits; i++) {
           thread_args[i].threadID = i;
           thread_args[i].numThreads = splits;
@@ -145,7 +153,7 @@ int parse(char * pointer, int splits, int32_t ** gate_counts_ref, int32_t * radi
           thread_args[i].header = header;
           pthread_create(&threads[i], NULL, process_projection_subset, &thread_args[i]);
      }
-    
+
      ScaleBucket buckets[9];
      int scaleValues[9][7] = {
           {80, 128, 128, 128, 0, 0, 0},
@@ -165,7 +173,7 @@ int parse(char * pointer, int splits, int32_t ** gate_counts_ref, int32_t * radi
           }
      }
      uint8_t colors[255][3];
-    
+
      for(int cur = 0; cur < 255; cur++){
           int bucket = -1;
           for (int j = 0; j < 9; j++) {
@@ -177,7 +185,7 @@ int parse(char * pointer, int splits, int32_t ** gate_counts_ref, int32_t * radi
           colors[cur][0] = 0;
           colors[cur][1] = 0;
           colors[cur][2] = 0;
-        
+
           switch (bucket) {
           case 0:
           case -1:
@@ -206,24 +214,24 @@ int parse(char * pointer, int splits, int32_t ** gate_counts_ref, int32_t * radi
           }
           }
      }
-    
+
      for (int i = 0; i < splits; i++) {
           pthread_join(threads[i], NULL);
      }
 
      int bytes = 0;
-    
-    
+
+
      GateData ** gateData = malloc (header->number_of_radials * sizeof(GateData *));
      //GateData * gateData[header->number_of_radials];
      *gate_data_ref = gateData;
-    
+
      for(int radial = 0; radial < header->number_of_radials; radial++){
           int curGate = 0;
 
           gateData[radial] = malloc(sizeof(GateData) * gate_counts[radial]);
           bytes+=sizeof(GateData) * gate_counts[radial];
-        
+
           for(int bin = 0; bin < header->number_of_bins; bin++){
                int8_t cur = data[radial*header->number_of_bins + bin];
                if(cur > 0){
@@ -233,7 +241,7 @@ int parse(char * pointer, int splits, int32_t ** gate_counts_ref, int32_t * radi
                     }
 
                     GateData * curGateData = &gateData[radial][curGate];
-    
+
                     curGateData->vertices[0].position.x = projectionData.xCoords[radial*(header->number_of_bins+1) + bin+1]; //topLeft.x
                     curGateData->vertices[0].position.y = projectionData.yCoords[radial*(header->number_of_bins+1) + bin+1]; //topLeft.y
                     curGateData->vertices[1].position.x = projectionData.xCoords[radialNumberAfter*(header->number_of_bins+1)  + bin+1]; //topRight.x
