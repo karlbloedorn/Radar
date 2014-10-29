@@ -45,12 +45,13 @@ void * process_projection_subset(void * input){
     
     for(int bin = args->threadID; bin < header->number_of_bins+1; bin += args->numThreads){
         data->dist[bin] = (header->first_bin_distance + bin*header->each_bin_distance )/ (RADIUS_OF_EARTH);
+     
         data->cosDist[bin] = cos(data->dist[bin]);
         data->sinDist[bin] = sin(data->dist[bin]);
     }
     double cosLatitude = cos( header->latitude* M_PI / 180.0 );
     double sinLatitude = sin( header->latitude* M_PI / 180.0 );
-    double radianLongitude = header->latitude* M_PI / 180.0;
+    double radianLongitude = header->longitude* M_PI / 180.0;
 
     for(int radial = args->threadID; radial < header->number_of_radials; radial+=args->numThreads){
         double azimuthRadians = ntohf(data->azimuths[radial])* M_PI / 180;
@@ -63,14 +64,13 @@ void * process_projection_subset(void * input){
                 moveWithBearing(radianLongitude,
                             sinLatitude,
                             cosLatitude,
-                            data->yCoords + radial*header->number_of_bins + bin,
-                            data->xCoords + radial*header->number_of_bins + bin,
+                            data->yCoords + radial*(header->number_of_bins+1) + bin,
+                            data->xCoords + radial*(header->number_of_bins+1) + bin,
                             data->cosBearing[radial],
                             data->sinBearing[radial],
-                            data->dist[bin],
                             data->cosDist[bin],
                             data->sinDist[bin]);
-            }
+           }
         }
              
     }
@@ -204,6 +204,7 @@ int parse(char * pointer, int splits, int32_t ** gate_counts_ref, int32_t * radi
                 break;
             }
         }
+        //printf("color: %i : r %i g %i b %i\nr", cur,colors[cur][0],colors[cur][1],colors[cur][2]  );
     }
     
     for (int i = 0; i < splits; i++) {
@@ -219,6 +220,10 @@ int parse(char * pointer, int splits, int32_t ** gate_counts_ref, int32_t * radi
     
     for(int radial = 0; radial < header->number_of_radials; radial++){
         int curGate = 0;
+        
+        if(gate_counts[radial] == 0){
+            printf("zero gates found at radial %i\n", radial);
+        }
 
         gateData[radial] = malloc(sizeof(GateData) * gate_counts[radial]);
         bytes+=sizeof(GateData) * gate_counts[radial];
@@ -246,6 +251,8 @@ int parse(char * pointer, int splits, int32_t ** gate_counts_ref, int32_t * radi
                 curGateData->vertices[5].position.x = projectionData.xCoords[radial*(header->number_of_bins+1)  + bin+1]; //topLeft.x
                 curGateData->vertices[5].position.y = projectionData.yCoords[radial*(header->number_of_bins+1)  + bin+1]; //topLeft.y
 
+                
+                
                 for (int z = 0; z < 6; z++) {
                     curGateData->vertices[z].color.r = colors[cur][0];
                     curGateData->vertices[z].color.g = colors[cur][1];
@@ -285,7 +292,6 @@ inline void moveWithBearing(float lon1,
                             float * outLongitude,
                             double cosBearing,
                             double sinBearing,
-                            double dist,
                             double cosDist,
                             double sinDist
                             ){
@@ -293,15 +299,28 @@ inline void moveWithBearing(float lon1,
     float lon2 = lon1 + atan2(sinBearing * sinDist * cosLatitude, cosDist - sinLatitude * sin(lat2));
     *outLatitude =  projectLatitudeMercator( lat2);
     *outLongitude = projectLongitudeMercator( lon2);
+    
+    //printf("latitude: %f longitude %f\n", lat2, lon2);
 }
 
 inline double projectLatitudeMercator(double latRad)
 {
+    const int mapWidth = 360;
+    const int mapHeight = 180;
+    
+    // convert from degrees to radians
+    //float latRad = latitude * M_PI / 180;
+    
+    // get y value
     float mercN = log(tan((M_PI / 4) + (latRad / 2)));
-    return degrees90 - (degrees360 * mercN / (2 * M_PI));
+    return (mapHeight / 2) - (mapWidth * mercN / (2 * M_PI));
 }
 
 inline double projectLongitudeMercator(double longitude)
 {
-    return (longitude + degrees180);
+    double latDegrees = 180 / M_PI * longitude;
+    const int mapWidth = 360;
+    //const int mapHeight = 180;
+    // get x value
+    return (latDegrees + 180) * (mapWidth / 360.0);
 }

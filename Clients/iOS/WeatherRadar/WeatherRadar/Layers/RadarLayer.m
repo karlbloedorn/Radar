@@ -11,57 +11,62 @@
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
+@implementation RadarLayerData
+
+
+-(instancetype) initWithRadialCount:(int32_t) radial_count withGateCounts: (int32_t * )gate_counts withGateData: (GateData ** )gate_data {
+    
+    self = [super init];
+    if(self){
+        self.radial_count = radial_count;
+        self.gate_counts = gate_counts;
+        self.gate_data = gate_data;
+    }
+    return self;
+}
+
+-(void) setBuffers: (GLuint *) buffers{
+    self.vbos = buffers;
+}
+
+@end
 
 @implementation RadarLayer{
     GLuint vbo;
     int triangleCount;
     NSData * vertexData;
+    RadarLayerData * data;
 }
-
-
--(instancetype) initWithData:(NSData *) data andLabel:(NSString *) label{
+-(instancetype) initWithData:(RadarLayerData *) datas andLabel:(NSString *) label{
     self = [super init];
     if(self){
-
-        
-        self.label = label;
-        
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            vertexData = data;
-
-            char * bytes = malloc(data.length);
-            [vertexData getBytes:bytes length:data.length];
-            
-            NSDate *date = [NSDate date];
-            int32_t radial_count_ref;
-
-            int32_t * gate_counts_ref;
-            GateData ** gate_data_ref;
-            int a = parse(bytes, [[NSProcessInfo processInfo] activeProcessorCount],&gate_counts_ref, &radial_count_ref, &gate_data_ref);
-            double timePassed_ms = [date timeIntervalSinceNow] * -1000.0;
-            
-            dispatch_async(dispatch_get_main_queue(), ^{
-                UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Time" message:[NSString stringWithFormat: @"time: %f for length data: %lu size:%i ", timePassed_ms, (unsigned long)[vertexData length], a] delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
-                [alert show];
-            });
-            
-        });
-        
-        
-        
+        data = datas;
     }
     return self;
 }
+
 -(void) setup{
+    /*
     triangleCount = (int)(vertexData.length / 12 /3);
     self.isSetup = YES;
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, vertexData.length, [vertexData bytes], GL_STATIC_DRAW);
-    vertexData = nil;
+    vertexData = nil;*/
 }
 -(void) draw{
-    if(self.isVisible){
+   // if(self.isVisible){
+    
+        for (int i = 0; i < data.radial_count; i++) { //
+            glBindBuffer(GL_ARRAY_BUFFER, data.vbos[i]);
+            glEnableVertexAttribArray(GLKVertexAttribPosition);
+            glEnableVertexAttribArray(GLKVertexAttribColor);
+            glVertexAttribPointer(GLKVertexAttribPosition, 2, GL_FLOAT, GL_FALSE, sizeof(VertexColor) + sizeof(VertexPosition), BUFFER_OFFSET(0));
+            glVertexAttribPointer(GLKVertexAttribColor, 4, GL_UNSIGNED_BYTE, GL_TRUE,sizeof(VertexColor) + sizeof(VertexPosition), BUFFER_OFFSET(sizeof(VertexPosition)));            
+            glDrawArrays(GL_TRIANGLES, 0,data.gate_counts[i]*6);
+        }
+        
+        /*
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
         glEnableVertexAttribArray(GLKVertexAttribPosition);
         glVertexAttribPointer(GLKVertexAttribPosition, 2, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
@@ -69,6 +74,7 @@
         glEnableVertexAttribArray(GLKVertexAttribColor);
         glVertexAttribPointer(GLKVertexAttribColor, 4, GL_UNSIGNED_BYTE, GL_TRUE, 0, BUFFER_OFFSET(2*sizeof(float)*triangleCount*3));
         glDrawArrays(GL_TRIANGLES, 0, triangleCount * 3);
-    }
+         */
+    //}
 }
 @end

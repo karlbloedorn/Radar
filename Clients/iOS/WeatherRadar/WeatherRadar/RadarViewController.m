@@ -15,6 +15,7 @@
 #import "LineLayer.h"
 #import "LayerSelectorViewController.h"
 #import "RadarLayer.h"
+#import "radarparser.h"
 
 @interface RadarViewController ()
 
@@ -41,6 +42,8 @@
     UIBarButtonItem * settingsButton;
     UIBarButtonItem * layersButton;
     UIPopoverController * layerPickerPopover;
+    NSLock * lock;
+    NSMutableArray * ready_to_load;
 }
 -(void) setupUserInterface{
     
@@ -92,21 +95,22 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
+    lock = [[NSLock alloc] init];
+    ready_to_load = [[NSMutableArray alloc] init];
     [self setupUserInterface];
 
     lineLayers = [[NSMutableArray alloc] init];
     radarLayers = [[NSMutableArray alloc] init];
     
-    //[lineLayers addObject: [[LineLayer alloc] initWithData:[NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource: @"state_lines" ofType:@"shp"]] andLabel: @"States"]];
-    //[lineLayers addObject: [[LineLayer alloc] initWithData:[NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"interstate_lines" ofType:@"shp"]] andLabel: @"Interstates"]];
-    //[lineLayers addObject: [[LineLayer alloc] initWithData:[NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"county_lines" ofType:@"shp"]] andLabel: @"Counties"]];
+    [lineLayers addObject: [[LineLayer alloc] initWithData:[NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource: @"state_lines" ofType:@"shp"]] andLabel: @"States"]];
+   // [lineLayers addObject: [[LineLayer alloc] initWithData:[NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"interstate_lines" ofType:@"shp"]] andLabel: @"Interstates"]];
+   // [lineLayers addObject: [[LineLayer alloc] initWithData:[NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"county_lines" ofType:@"shp"]] andLabel: @"Counties"]];
 
     for(LineLayer * overlay in lineLayers){
         overlay.isVisible = YES;
     }
-    NSString * testRadarFilePath0 =[[NSBundle mainBundle] pathForResource:@"testfile3" ofType:@"bin"];
-    [radarLayers addObject: [[RadarLayer alloc] initWithData:[NSData dataWithContentsOfFile:testRadarFilePath0] andLabel: @"dunno"]];
+    //NSString * testRadarFilePath0 =[[NSBundle mainBundle] pathForResource:@"testfile3" ofType:@"bin"];
+    //[radarLayers addObject: [[RadarLayer alloc] initWithData:[NSData dataWithContentsOfFile:testRadarFilePath0] andLabel: @"dunno"]];
 
     /* NSString * testRadarFilePath =[[NSBundle mainBundle] pathForResource:@"KTBW-new" ofType:@"bin"];
     [radarLayers addObject: [[RadarLayer alloc] initWithData:[NSData dataWithContentsOfFile:testRadarFilePath] andLabel: @"KTBW"]];*/
@@ -120,23 +124,45 @@
     centerMapX = 78;
     
     
-   // self.context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
-   // if (!self.context) {
-   //     NSLog(@"Failed to create ES context");
-   // }
-   // self.radarSurface.context = self.context;
+    self.context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
+    if (!self.context) {
+        NSLog(@"Failed to create ES context");
+    }
+    self.radarSurface.context = self.context;
 
- //   [EAGLContext setCurrentContext:self.context];
+   [EAGLContext setCurrentContext:self.context];
     
-    //lineProgram = [self loadShadersWithVertPath:@"lines_vertex" andFragPath: @"lines_fragment" andColorEnabled:NO];
-    //radarProgram = [self loadShadersWithVertPath:@"radar_vertex" andFragPath: @"radar_fragment" andColorEnabled:YES];
+    lineProgram = [self loadShadersWithVertPath:@"lines_vertex" andFragPath: @"lines_fragment" andColorEnabled:NO];
+    radarProgram = [self loadShadersWithVertPath:@"radar_vertex" andFragPath: @"radar_fragment" andColorEnabled:YES];
     
-    //lineModelViewUniform = glGetUniformLocation(lineProgram, "modelViewProjectionMatrix");
-   //radarModelViewUniform = glGetUniformLocation(radarProgram, "modelViewProjectionMatrix");
+    lineModelViewUniform = glGetUniformLocation(lineProgram, "modelViewProjectionMatrix");
+    radarModelViewUniform = glGetUniformLocation(radarProgram, "modelViewProjectionMatrix");
 
-//    CADisplayLink* displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(render:)];
-//    displayLink.frameInterval = 1;
-//    [displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
+    CADisplayLink* displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(render:)];
+    displayLink.frameInterval = 1;
+    [displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
+    
+    
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        NSString * testRadarFilePath0 =[[NSBundle mainBundle] pathForResource:@"testfile3" ofType:@"bin"];
+        
+        NSData * data = [NSData dataWithContentsOfFile:testRadarFilePath0];
+       
+        char * bytes =  (char *)[data bytes]; // malloc(data.length);
+        //[data getBytes:bytes length:data.length];
+        
+        int32_t radial_count_ref;
+        int32_t * gate_counts_ref;
+        GateData ** gate_data_ref;
+        parse(bytes, [[NSProcessInfo processInfo] activeProcessorCount],&gate_counts_ref, &radial_count_ref, &gate_data_ref);
+        
+        RadarLayerData * layer = [[RadarLayerData alloc] initWithRadialCount:radial_count_ref withGateCounts:gate_counts_ref withGateData:gate_data_ref];
+
+        [lock lock];
+        [ready_to_load addObject:layer];
+        [lock unlock];
+        
+    });
 }
 
 -(void) sharePressed: (id) sender{
@@ -184,7 +210,31 @@
 }
 
 - (void)glkView:(GLKView *)view drawInRect:(CGRect)rect {
-
+    
+    NSMutableArray * loading_array = [[NSMutableArray alloc] init];
+    [lock lock];
+    for (RadarLayerData * layer in ready_to_load) {
+        [loading_array addObject:layer];
+    }
+    [ready_to_load removeAllObjects];
+    [lock unlock];
+    
+    for (RadarLayerData * layer in loading_array) {
+        NSLog(@"radial count: %i",  layer.radial_count);
+        GLuint * vbos = malloc(sizeof(GLuint)*layer.radial_count);
+        glGenBuffers(layer.radial_count, vbos);
+        for (int i =0; i< layer.radial_count; i++) { //;
+            //NSLog(@"gates for %i : %i", i ,  layer.gate_counts[i]);
+            glBindBuffer(GL_ARRAY_BUFFER, vbos[i]);
+            glBufferData(GL_ARRAY_BUFFER, layer.gate_counts[i]*sizeof(GateData) ,(void * )(layer.gate_data[i]), GL_STATIC_DRAW);
+            free (layer.gate_data[i]);
+        }
+        [layer setVbos:vbos];
+        
+        RadarLayer * radar = [[RadarLayer alloc] initWithData:layer andLabel:@"Test"];
+        [radarLayers addObject:radar];
+    }
+    
     glClearColor(0.0, 0.0, 0.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
 
@@ -216,14 +266,13 @@
     glUseProgram(radarProgram);
     glUniformMatrix4fv(radarModelViewUniform, 1, 0, modelViewProjectionMatrix.m);
     
-    /*
-    
+
     for(RadarLayer * overlay in radarLayers){
-        if(![overlay isSetup]){
-            [overlay setup];
-        }
+       // if(![overlay isSetup]){
+       //     [overlay setup];
+       // }
         [overlay draw];
-    }*/
+    }
 }
 
 
