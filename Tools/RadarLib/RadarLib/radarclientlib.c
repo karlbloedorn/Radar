@@ -57,9 +57,9 @@ void * process_projection_subset(void * input){
           data->cosDist[bin] = cos(data->dist[bin]);
           data->sinDist[bin] = sin(data->dist[bin]);
      }
-     double cosLatitude = cos( header->latitude* M_PI / 180.0 );
-     double sinLatitude = sin( header->latitude* M_PI / 180.0 );
-     double radianLongitude = header->latitude* M_PI / 180.0;
+     double cosLatitude = cos( header->latitude * M_PI / 180.0 );
+     double sinLatitude = sin( header->latitude * M_PI / 180.0 );
+     double radianLongitude = header->longitude * M_PI / 180.0;
 
      for(int radial = args->threadID; radial < header->number_of_radials; radial+=args->numThreads){
           double azimuthRadians = ntohf(data->azimuths[radial])* M_PI / 180;
@@ -71,11 +71,10 @@ void * process_projection_subset(void * input){
                     moveWithBearing(radianLongitude,
                                     sinLatitude,
                                     cosLatitude,
-                                    data->yCoords + radial*header->number_of_bins + bin,
-                                    data->xCoords + radial*header->number_of_bins + bin,
+                                    data->yCoords + radial* (header->number_of_bins+1) + bin,
+                                    data->xCoords + radial* (header->number_of_bins+1) + bin,
                                     data->cosBearing[radial],
                                     data->sinBearing[radial],
-                                    data->dist[bin],
                                     data->cosDist[bin],
                                     data->sinDist[bin]);
                }
@@ -122,8 +121,8 @@ int parse(char * pointer, int splits, int32_t ** gate_counts_ref, int32_t * radi
 
      memset(projectionData.calculate, 0, sizeof(uint8_t) * BITNSLOTS((header->number_of_radials * (header->number_of_bins+1))));
 
-     for(int radial = 0; radial < header->number_of_radials; radial++){
-          for(int bin = 0; bin < header->number_of_bins; bin++){
+     for(unsigned int radial = 0; radial < header->number_of_radials; radial++){
+          for(unsigned int bin = 0; bin < header->number_of_bins; bin++){
                int8_t cur = data[radial*header->number_of_bins + bin];
                if(cur > 0){
                     int radialNumberAfter = radial+1;
@@ -132,9 +131,8 @@ int parse(char * pointer, int splits, int32_t ** gate_counts_ref, int32_t * radi
                     }
                     // bin and bin+1
                     // radial and radialNumberAfter
-
-                    BITSET(projectionData.calculate, radial * (header->number_of_bins+1)+ bin);
-                    BITSET(projectionData.calculate, radial * (header->number_of_bins+1)+ bin+1);
+                    BITSET(projectionData.calculate, radial * (header->number_of_bins+1) + bin);
+                    BITSET(projectionData.calculate, radial * (header->number_of_bins+1) + bin + 1);
                     BITSET(projectionData.calculate, radialNumberAfter*(header->number_of_bins+1)+ bin);
                     BITSET(projectionData.calculate, (radialNumberAfter*(header->number_of_bins+1)+ bin+1));
                     gate_counts[radial]++;
@@ -283,7 +281,6 @@ inline void moveWithBearing(float lon1,
                             float * outLongitude,
                             double cosBearing,
                             double sinBearing,
-                            double dist,
                             double cosDist,
                             double sinDist
      ){
@@ -295,11 +292,15 @@ inline void moveWithBearing(float lon1,
 
 inline double projectLatitudeMercator(double latRad)
 {
+     const int mapWidth = 360;
+     const int mapHeight = 180;
      float mercN = log(tan((M_PI / 4) + (latRad / 2)));
-     return degrees90 - (degrees360 * mercN / (2 * M_PI));
+     return (mapHeight / 2) - (mapWidth * mercN / (2 * M_PI));
 }
 
 inline double projectLongitudeMercator(double longitude)
 {
-     return (longitude + degrees180);
+     double latDegrees = 180 / M_PI * longitude;
+     const int mapWidth = 360;
+     return (latDegrees + 180) * (mapWidth / 360.0);
 }
