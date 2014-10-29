@@ -7,6 +7,8 @@
 #include "radarlib.h"
 
 #define L2_VERSION_PREFIX "AR2V00"
+#define SENTIAL_LATITUDE -999.0
+#define SENTIAL_LONGITUDE 999.0
 #define SetLastError(format, args...) snprintf(context->last_error, sizeof(context->last_error), format, ## args);
 #define CheckBounds(x) if(offset + x > context->input.length){ \
         SetLastError("Bounds check failed for offset"); \
@@ -132,8 +134,13 @@ radar_status_t loadRadarHeader(RadarContext *context, RadarHeader **out) {
     header->first_bin_distance = ntohf(header->first_bin_distance);
     header->each_bin_distance = ntohf(header->each_bin_distance);
     header->crc32 = ntohl(header->crc32);
+    size_t size = header->number_of_bins * header->number_of_radials * sizeof(int8_t) + sizeof(float) * header->number_of_radials + sizeof(RadarHeader);
     if(strncmp(header->magic, "CRDF", 4) != 0) {
          SetLastError("CRDF magic invalid.");
+         return RADAR_INVALID_DATA;
+    }
+    if(size != context->output.length) {
+         SetLastError("File size incorrect expected %lu, got %lu.", size, context->output.length);
          return RADAR_INVALID_DATA;
     }
     return RADAR_OK;
@@ -262,8 +269,8 @@ void init_crdf_header(RadarHeader *in) {
 radar_status_t process_level2(RadarContext * context){
     radar_status_t status = RADAR_OK;
     int offset = 0;
-    float siteLatitude = 999;
-    float siteLongitude = 0;
+    float siteLatitude = SENTIAL_LATITUDE;
+    float siteLongitude = SENTIAL_LONGITUDE;
     int numberOfRangeBins = 1832;
     int numberOfRadials = 720;
     int outputSize =  sizeof(int8_t) * numberOfRangeBins * numberOfRadials;
@@ -300,6 +307,8 @@ radar_status_t process_level2(RadarContext * context){
 
     // Go through the chunks
     short lastChunk = 0;
+    int acceptable_records = 0;
+    int processed_records = 0;
     while (!lastChunk) {
         ChunkHeader *header;
         CheckBounds(sizeof(ChunkHeader));
@@ -355,16 +364,17 @@ radar_status_t process_level2(RadarContext * context){
                 scanHeaderLoad(scan);
 
                 if (scan->ars != 1) {
-                    //not HI res.
-                    continue;
+                     //not HI res.
+                     continue;
                 }
                 if (scan->elevationNum != 1) {
-                    continue;
+                     continue;
                 }
                 if(scan->azimuthNumber > numberOfRadials-1) {
                     SetLastError("Invalid azimuth number (%i) greater than %i", scan->azimuthNumber, numberOfRadials);
                     goto invalid_error;
                 }
+                acceptable_records++;
                 azimuths[scan->azimuthNumber] = scan->azimuthAngle;
 
                 for (int i = 0; i < 9; i++) {
@@ -407,11 +417,22 @@ radar_status_t process_level2(RadarContext * context){
                 }
             }
         }
+        processed_records += record;
         offset += header->chunkSize;
         free(uncompressedPointer);
     }
+
+    if(acceptable_records == 0) {
+         SetLastError("No records were acceptable, processed %i records", processed_records);
+         goto invalid_error;
+    }
+
     outputHeader->latitude = siteLatitude;
     outputHeader->longitude = siteLongitude;
+    if(outputHeader->latitude == SENTIAL_LATITUDE || outputHeader->longitude == SENTIAL_LONGITUDE) {
+         SetLastError("Site latitude/longitude not found");
+         goto invalid_error;
+    }
     SetLastError("No error");
 
     for (int i = 0; i < outputHeader->number_of_radials; i++) {
@@ -432,10 +453,8 @@ radar_status_t process_level2(RadarContext * context){
     outputHeader->crc32 = htonl(outputHeader->crc32);
     return RADAR_OK;
 memory_error:
-    free(data_array);
     return RADAR_NOMEM;
 invalid_error:
-    free(data_array);
     return RADAR_INVALID_DATA;
 }
 radar_status_t process_level3(RadarContext * context){
