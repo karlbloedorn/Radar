@@ -71,7 +71,6 @@ void moveWithBearing(float lon1,
                      float * outLongitude,
                      double cosBearing,
                      double sinBearing,
-                     double dist,
                      double cosDist,
                      double sinDist
                      );
