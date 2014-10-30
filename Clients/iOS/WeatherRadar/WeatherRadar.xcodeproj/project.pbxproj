@@ -13,6 +13,7 @@
 		6E19A66B19ECDE320007EEF8 /* radarparser.c in Sources */ = {isa = PBXBuildFile; fileRef = 6E19A66919ECDE320007EEF8 /* radarparser.c */; };
 		6E262ABB19E2471E00F5BADE /* level3test8.bin in Resources */ = {isa = PBXBuildFile; fileRef = 6E262ABA19E2471E00F5BADE /* level3test8.bin */; };
 		6E262ABD19E2497000F5BADE /* level3test9.bin in Resources */ = {isa = PBXBuildFile; fileRef = 6E262ABC19E2497000F5BADE /* level3test9.bin */; };
+		6E409C6C1A00A87E00311F7C /* KNQA_20141029_0432.processed in Resources */ = {isa = PBXBuildFile; fileRef = 6E409C6B1A00A87E00311F7C /* KNQA_20141029_0432.processed */; };
 		6E9064D919F3049600B4CC26 /* libpthread.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 6E9064D819F3049600B4CC26 /* libpthread.dylib */; };
 		6EB33AEE19DE3E6C00358C5E /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 6EB33AED19DE3E6C00358C5E /* main.m */; };
 		6EB33AF119DE3E6C00358C5E /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 6EB33AF019DE3E6C00358C5E /* AppDelegate.m */; };
@@ -101,6 +102,7 @@
 		6E19A66A19ECDE320007EEF8 /* radarparser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = radarparser.h; sourceTree = "<group>"; };
 		6E262ABA19E2471E00F5BADE /* level3test8.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = level3test8.bin; sourceTree = "<group>"; };
 		6E262ABC19E2497000F5BADE /* level3test9.bin */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = archive.macbinary; path = level3test9.bin; sourceTree = "<group>"; };
+		6E409C6B1A00A87E00311F7C /* KNQA_20141029_0432.processed */ = {isa = PBXFileReference; lastKnownFileType = file; path = KNQA_20141029_0432.processed; sourceTree = "<group>"; };
 		6E9064D819F3049600B4CC26 /* libpthread.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libpthread.dylib; path = usr/lib/libpthread.dylib; sourceTree = SDKROOT; };
 		6EB33AE819DE3E6B00358C5E /* WeatherRadar.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WeatherRadar.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6EB33AEC19DE3E6C00358C5E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -342,6 +344,7 @@
 		6EB33B5219DE79D300358C5E /* Assets */ = {
 			isa = PBXGroup;
 			children = (
+				6E409C6B1A00A87E00311F7C /* KNQA_20141029_0432.processed */,
 				6E19A66719ECDBD70007EEF8 /* testfile3.bin */,
 				6E262ABC19E2497000F5BADE /* level3test9.bin */,
 				6E262ABA19E2471E00F5BADE /* level3test8.bin */,
@@ -495,6 +498,7 @@
 				6EB33B8C19E0D11B00358C5E /* KTBW-new.bin in Resources */,
 				6EB33B8619DF5C6600358C5E /* radar_vertex.glsl in Resources */,
 				6EB33B6B19DE79D300358C5E /* interstate_lines.shp in Resources */,
+				6E409C6C1A00A87E00311F7C /* KNQA_20141029_0432.processed in Resources */,
 				6E262ABB19E2471E00F5BADE /* level3test8.bin in Resources */,
 				6EB33AF919DE3E6C00358C5E /* Images.xcassets in Resources */,
 				6EB33B7F19DF5C4C00358C5E /* lines_vertex.glsl in Resources */,

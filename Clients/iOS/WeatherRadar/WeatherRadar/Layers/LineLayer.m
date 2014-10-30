@@ -31,7 +31,7 @@
     self.isSetup = YES;
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, positionData.length-4, [positionData bytes] + 4, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, positionData.length-4, ((char *)[positionData bytes]) + 4, GL_STATIC_DRAW);
     positionData = nil;
 }
 

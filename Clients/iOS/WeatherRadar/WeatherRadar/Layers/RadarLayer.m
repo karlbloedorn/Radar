@@ -56,14 +56,13 @@
 }
 -(void) draw{
    // if(self.isVisible){
-    
+    glEnableVertexAttribArray(GLKVertexAttribPosition);
+    glEnableVertexAttribArray(GLKVertexAttribColor);
         for (int i = 0; i < data.radial_count; i++) { //
             glBindBuffer(GL_ARRAY_BUFFER, data.vbos[i]);
-            glEnableVertexAttribArray(GLKVertexAttribPosition);
-            glEnableVertexAttribArray(GLKVertexAttribColor);
             glVertexAttribPointer(GLKVertexAttribPosition, 2, GL_FLOAT, GL_FALSE, sizeof(VertexColor) + sizeof(VertexPosition), BUFFER_OFFSET(0));
-            glVertexAttribPointer(GLKVertexAttribColor, 4, GL_UNSIGNED_BYTE, GL_TRUE,sizeof(VertexColor) + sizeof(VertexPosition), BUFFER_OFFSET(sizeof(VertexPosition)));            
-            glDrawArrays(GL_TRIANGLES, 0,data.gate_counts[i]*6);
+            glVertexAttribPointer(GLKVertexAttribColor, 4, GL_UNSIGNED_BYTE, GL_TRUE,sizeof(VertexColor) + sizeof(VertexPosition), BUFFER_OFFSET(sizeof(VertexPosition)));
+            glDrawArrays(GL_TRIANGLES, 0, data.gate_counts[i]*6);
         }
         
         /*

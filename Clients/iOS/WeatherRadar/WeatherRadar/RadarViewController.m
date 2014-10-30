@@ -142,9 +142,30 @@
     displayLink.frameInterval = 1;
     [displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
     
-    
+ 
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         NSString * testRadarFilePath0 =[[NSBundle mainBundle] pathForResource:@"testfile3" ofType:@"bin"];
+        
+        NSData * data = [NSData dataWithContentsOfFile:testRadarFilePath0];
+        
+        char * bytes =  (char *)[data bytes]; // malloc(data.length);
+        //[data getBytes:bytes length:data.length];
+        
+        int32_t radial_count_ref;
+        int32_t * gate_counts_ref;
+        GateData ** gate_data_ref;
+        parse(bytes, [[NSProcessInfo processInfo] activeProcessorCount],&gate_counts_ref, &radial_count_ref, &gate_data_ref);
+        
+        RadarLayerData * layer = [[RadarLayerData alloc] initWithRadialCount:radial_count_ref withGateCounts:gate_counts_ref withGateData:gate_data_ref];
+        
+        [lock lock];
+        [ready_to_load addObject:layer];
+        [lock unlock];
+        
+    });
+    /*
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        NSString * testRadarFilePath0 =[[NSBundle mainBundle] pathForResource:@"KNQA_20141029_0432" ofType:@"processed"];
         
         NSData * data = [NSData dataWithContentsOfFile:testRadarFilePath0];
        
@@ -162,7 +183,7 @@
         [ready_to_load addObject:layer];
         [lock unlock];
         
-    });
+    });*/
 }
 
 -(void) sharePressed: (id) sender{
@@ -210,7 +231,9 @@
 }
 
 - (void)glkView:(GLKView *)view drawInRect:(CGRect)rect {
-    
+    glClearColor(0.0, 0.0, 0.0, 1.0);
+    glClear(GL_COLOR_BUFFER_BIT);
+
     NSMutableArray * loading_array = [[NSMutableArray alloc] init];
     [lock lock];
     for (RadarLayerData * layer in ready_to_load) {
@@ -226,8 +249,11 @@
         for (int i =0; i< layer.radial_count; i++) { //;
             //NSLog(@"gates for %i : %i", i ,  layer.gate_counts[i]);
             glBindBuffer(GL_ARRAY_BUFFER, vbos[i]);
+            
             glBufferData(GL_ARRAY_BUFFER, layer.gate_counts[i]*sizeof(GateData) ,(void * )(layer.gate_data[i]), GL_STATIC_DRAW);
             free (layer.gate_data[i]);
+        
+            
         }
         [layer setVbos:vbos];
         
@@ -235,8 +261,6 @@
         [radarLayers addObject:radar];
     }
     
-    glClearColor(0.0, 0.0, 0.0, 1.0);
-    glClear(GL_COLOR_BUFFER_BIT);
 
     
     GLKMatrix4 translate = GLKMatrix4MakeTranslation(-centerMapX, -centerMapY, 0);
@@ -273,6 +297,11 @@
        // }
         [overlay draw];
     }
+    /*
+    GLenum err;
+    while ((err = glGetError()) != GL_NO_ERROR) {
+        printf("glError: %i\n", err);
+    }*/
 }
 
 

@@ -13,7 +13,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-
+#define MIN(a,b) (((a)<(b))?(a):(b))
 #define RADIUS_OF_EARTH 6378137
 const double degrees90 = 90* M_PI / 180.0;
 const double degrees360 = 360* M_PI / 180.0;
@@ -60,7 +60,7 @@ void * process_projection_subset(void * input){
         
         for(int bin = 0; bin < header->number_of_bins+1; bin++){
             
-            if( data->calculate[radial*(header->number_of_bins+1)+ bin] ){
+            //if( data->calculate[radial*(header->number_of_bins+1)+ bin] ){
                 moveWithBearing(radianLongitude,
                             sinLatitude,
                             cosLatitude,
@@ -70,10 +70,15 @@ void * process_projection_subset(void * input){
                             data->sinBearing[radial],
                             data->cosDist[bin],
                             data->sinDist[bin]);
-           }
+           //}
         }
              
     }
+    
+    
+    
+    
+    
     return NULL;
 }
 
@@ -106,9 +111,34 @@ int parse(char * pointer, int splits, int32_t ** gate_counts_ref, int32_t * radi
     projectionData.calculate = malloc (sizeof(uint8_t) * ( header->number_of_radials * (header->number_of_bins+1) ) );
     projectionData.azimuths = azimuths;
     
-    *radial_count_ref = header->number_of_radials;
+    
+    if(projectionData.cosBearing == 0){
+        printf("memory error allocating cosBearing space\n");
+    }
+    if(projectionData.sinBearing == 0){
+        printf("memory error allocating sinBearing space\n");
+    }
+    if(projectionData.dist == 0){
+        printf("memory error allocating dist space\n");
+    }
+    if(projectionData.cosDist == 0){
+        printf("memory error allocating cosDist space\n");
+    }
+    if(projectionData.sinDist == 0){
+        printf("memory error allocating sinDist space\n");
+    }
+    if(projectionData.xCoords == 0){
+        printf("memory error allocating xCoords space\n");
+    }
+    if(projectionData.yCoords == 0){
+        printf("memory error allocating yCoords space\n");
+    }
+    if(projectionData.calculate == 0){
+        printf("memory error allocating calculate space\n");
+    }
+
+    
     int32_t * gate_counts = malloc(sizeof(int32_t)*header->number_of_radials);
-    *gate_counts_ref = gate_counts;
     //int32_t gate_counts[header->number_of_radials];
     memset(gate_counts, 0, sizeof(uint32_t)*header->number_of_radials);
 
@@ -210,23 +240,56 @@ int parse(char * pointer, int splits, int32_t ** gate_counts_ref, int32_t * radi
     for (int i = 0; i < splits; i++) {
         pthread_join(threads[i], NULL);
     }
+    
+    for(int i = 0; i < header->number_of_radials*(header->number_of_bins+1); i++){
+       // printf("%f\n", projectionData.xCoords[i]);
+    }
 
     int bytes = 0;
     
+    int totalGates =0;
+    for(int radial = 0; radial < header->number_of_radials; radial++){
+        totalGates+= gate_counts[radial];
+    }
+    int maxPerVBO = 999999;
+    int vbocount = totalGates/ maxPerVBO;
+    int size = sizeof(GateData)*totalGates;
+    int extraGates = totalGates % maxPerVBO;
+    int totalVBO = vbocount + (extraGates > 0 ? 1 : 0 );
+
+    printf("maxpervbo:  %i  vbocount: %i + another %i   sizeMB %i \n",maxPerVBO, vbocount,totalGates % maxPerVBO, size/1024/1024  );
     
-    GateData ** gateData = malloc (header->number_of_radials * sizeof(GateData *));
+    int * vbo_counts = malloc(sizeof(int) * totalVBO);
+    *radial_count_ref = totalVBO;
+    *gate_counts_ref = vbo_counts;
+    
+    GateData ** gateData = malloc(sizeof(GateData *)* totalVBO);
+    for (int i = 0; i < totalVBO; i++) {
+        int vboSize = 0;
+        if( i == vbocount ){
+            vboSize = extraGates;
+        } else {
+            vboSize = MIN(totalGates, maxPerVBO);
+        }
+        vbo_counts[i] = vboSize;
+        gateData[i] = malloc(sizeof(GateData) * vboSize);
+        bytes+=sizeof(GateData) * vboSize;
+
+    }
+    
+   // GateData ** gateData = malloc (header->number_of_radials * sizeof(GateData *));
     //GateData * gateData[header->number_of_radials];
     *gate_data_ref = gateData;
     
-    for(int radial = 0; radial < header->number_of_radials; radial++){
-        int curGate = 0;
-        
-        if(gate_counts[radial] == 0){
-            printf("zero gates found at radial %i\n", radial);
-        }
+    int curGate = 0;
 
-        gateData[radial] = malloc(sizeof(GateData) * gate_counts[radial]);
-        bytes+=sizeof(GateData) * gate_counts[radial];
+    for(int radial = 0; radial < header->number_of_radials; radial++){
+
+        //gateData[radial] = malloc(sizeof(GateData) * gate_counts[radial]);
+        
+        //if(gateData[radial] == 0){
+        //    printf("memory error allocating radial gate data space\n");
+       // }
         
         for(int bin = 0; bin < header->number_of_bins; bin++){
             int8_t cur = data[radial*header->number_of_bins + bin];
@@ -236,7 +299,9 @@ int parse(char * pointer, int splits, int32_t ** gate_counts_ref, int32_t * radi
                     radialNumberAfter = 0;
                 }
 
-                GateData * curGateData = &gateData[radial][curGate];
+                int vboNum = curGate / maxPerVBO;
+                int vboPos = curGate % maxPerVBO;
+                GateData * curGateData = &gateData[vboNum][vboPos];
     
                 curGateData->vertices[0].position.x = projectionData.xCoords[radial*(header->number_of_bins+1) + bin+1]; //topLeft.x
                 curGateData->vertices[0].position.y = projectionData.yCoords[radial*(header->number_of_bins+1) + bin+1]; //topLeft.y
@@ -254,15 +319,17 @@ int parse(char * pointer, int splits, int32_t ** gate_counts_ref, int32_t * radi
                 
                 
                 for (int z = 0; z < 6; z++) {
-                    curGateData->vertices[z].color.r = colors[cur][0];
-                    curGateData->vertices[z].color.g = colors[cur][1];
-                    curGateData->vertices[z].color.b = colors[cur][2];
+                    curGateData->vertices[z].color.r = 0; //colors[cur][0];
+                    curGateData->vertices[z].color.g = 255; //colors[cur][1];
+                    curGateData->vertices[z].color.b = 0; //colors[cur][2];
                     curGateData->vertices[z].color.a = 255;
                 }
                 curGate++;
             }
         }
     }
+    free(gate_counts);
+    free(projectionData.calculate);
     free(projectionData.cosBearing);
     free(projectionData.sinBearing);
     free(projectionData.dist);
