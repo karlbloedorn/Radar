@@ -313,37 +313,41 @@ radar_status_t process_level2(RadarContext * context){
         ChunkHeader *header;
         CheckBounds(sizeof(ChunkHeader));
         header = (ChunkHeader *)(context->input.data + offset);
-        header->chunkSize = ntohl(header->chunkSize);
-        offset += sizeof(header->chunkSize);
-
-        // If negative, this is the last chunk. Reverse sign to get size
-        if (header->chunkSize < 0) {
-            header->chunkSize *= -1;
-            lastChunk = 1;
-        }
-
-        // All chuncks should be BZ compressed currently, we do not support uncompressed chunks.
-        if (header->compressedSignifier[0] != 'B'
-            || header->compressedSignifier[1] != 'Z') {
-            SetLastError("Chunk was not compressed");
-            return RADAR_INVALID_DATA;
-        }
-        CheckBounds(header->chunkSize);
 
         char *uncompressedPointer;
         size_t uncompressedSize;
-        radar_status_t status = decompressChunk( context->input.data + offset , header->chunkSize, &uncompressedSize, &uncompressedPointer);
-        if (status == RADAR_NOMEM) {
-            SetLastError("Failed to allocate memory for decompression")
-            goto memory_error;
+        // Some archives are compressed into chunks with BZIP. If the
+        // first chunk doesn't have the BZIP magic assume that the
+        // file is not chunked.
+        short chunkCompressed = header->compressedSignifier[0] == 'B' && header->compressedSignifier[1] == 'Z';
+        if (chunkCompressed) {
+             header->chunkSize = ntohl(header->chunkSize);
+             offset += sizeof(header->chunkSize);
+             CheckBounds(header->chunkSize);
+
+             // If negative, this is the last chunk. Reverse sign to get size
+             if (header->chunkSize < 0) {
+                  header->chunkSize *= -1;
+                  lastChunk = 1;
+             }
+
+             radar_status_t status = decompressChunk(context->input.data + offset, header->chunkSize, &uncompressedSize, &uncompressedPointer);
+             if (status == RADAR_NOMEM) {
+                  SetLastError("Failed to allocate memory for decompression")
+                       goto memory_error;
+             }
+             if (status == RADAR_INVALID_DATA) {
+                  SetLastError("Invalid compressed data")
+                       goto invalid_error;
+             }
+        } else {
+              uncompressedPointer =  context->input.data;
+              uncompressedSize = context->input.length;
+              lastChunk = 1;
         }
-        if (status == RADAR_INVALID_DATA) {
-            SetLastError("Invalid compressed data")
-            goto invalid_error;
-        }
+
         int record = 0;
         int message_offset31 = 0;
-
         while (1) {
             unsigned long offset = record * 2432 + message_offset31;
             record++;
@@ -406,7 +410,7 @@ radar_status_t process_level2(RadarContext * context){
                                 data_array[data_offset] = reflectivity;
 
                             }
-                        } else if (strncmp(dataBlock->tname, "VOL", 3) == 0 && siteLatitude == 999) {
+                        } else if (strncmp(dataBlock->tname, "VOL", 3) == 0 && siteLatitude == SENTIAL_LATITUDE) {
                             char *volRecordOffset = dataBlockHeaderOffset + sizeof(DataBlockHeader);
                             VolRecord *vol = (VolRecord *) volRecordOffset;
                             volRecordLoad(vol);
@@ -419,7 +423,9 @@ radar_status_t process_level2(RadarContext * context){
         }
         processed_records += record;
         offset += header->chunkSize;
-        free(uncompressedPointer);
+        if(chunkCompressed) {
+             free(uncompressedPointer);
+        }
     }
 
     if(acceptable_records == 0) {
