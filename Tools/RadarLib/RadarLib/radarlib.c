@@ -1,3 +1,5 @@
+#define _XOPEN_SOURCE 600
+
 #include <stdlib.h>
 #include <string.h>
 #include <zlib.h>
@@ -147,7 +149,7 @@ radar_status_t loadRadarHeader(RadarContext *context, RadarHeader **out) {
 }
 
 radar_status_t verifyCRC32(RadarContext *context, RadarHeader *header) {
-     uint32_t file_crc32 = (uint32_t)crc32(0, (unsigned char *)context->output.data + sizeof(RadarHeader), (uint)context->output.length - sizeof(RadarHeader));
+     uint32_t file_crc32 = (uint32_t)crc32(0, (unsigned char *)context->output.data + sizeof(RadarHeader), (uint32_t)context->output.length - sizeof(RadarHeader));
      return header->crc32 == file_crc32 ? RADAR_OK : RADAR_INVALID_DATA;
 }
 
@@ -445,7 +447,7 @@ radar_status_t process_level2(RadarContext * context){
         azimuths[i] = htonf(azimuths[i]);
     }
     // No more operations on anything other than the header after this point.
-    outputHeader->crc32 = (uint32_t)crc32(0, (unsigned char *)context->output.data + sizeof(RadarHeader), (uint)context->output.length - sizeof(RadarHeader));
+    outputHeader->crc32 = (uint32_t)crc32(0, (unsigned char *)context->output.data + sizeof(RadarHeader), (uint32_t)context->output.length - sizeof(RadarHeader));
 
     outputHeader->longitude = htonf(outputHeader->longitude);
     outputHeader->latitude = htonf(outputHeader->latitude);
