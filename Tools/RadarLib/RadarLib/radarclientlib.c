@@ -4,16 +4,20 @@
 //
 //  Created by Karl Bloedorn on 10/13/14.
 //  Copyright (c) 2014 Karl Bloedorn. All rights reserved.
-//
 #include <math.h>
 #include <sys/time.h>
-#include <pthread.h>
 #include <stdlib.h>
 #include <string.h>
 #include <arpa/inet.h>
 
 #include "radarlib.h"
 #include "radarclientlib.h"
+
+#ifdef __STDC_NO_THREADS__
+#include "c11threads.h"
+#else
+#include <threads.h>
+#endif
 
 #define RADIUS_OF_EARTH 6378137
 const double degrees90 = 90* M_PI / 180.0;
@@ -47,7 +51,7 @@ typedef struct projectionThreadArgs {
      ProjectionData * data;
 } ProjectionThreadArgs;
 
-void * process_projection_subset(void * input){
+int process_projection_subset(void * input){
      ProjectionThreadArgs * args = input;
      RadarHeader * header = args->header;
      ProjectionData * data = args->data;
@@ -81,7 +85,6 @@ void * process_projection_subset(void * input){
           }
 
      }
-     return NULL;
 }
 
 int parse(char * pointer, int splits, int32_t ** gate_counts_ref, int32_t * radial_count_ref, GateData *** gate_data_ref ) {
@@ -141,7 +144,7 @@ int parse(char * pointer, int splits, int32_t ** gate_counts_ref, int32_t * radi
           }
      }
 
-     pthread_t threads[splits];
+     thrd_t threads[splits];
      ProjectionThreadArgs thread_args[splits];
 
      for (int i = 0; i < splits; i++) {
@@ -149,7 +152,7 @@ int parse(char * pointer, int splits, int32_t ** gate_counts_ref, int32_t * radi
           thread_args[i].numThreads = splits;
           thread_args[i].data = &projectionData;
           thread_args[i].header = header;
-          pthread_create(&threads[i], NULL, process_projection_subset, &thread_args[i]);
+          thrd_create(&threads[i], process_projection_subset, &thread_args[i]);
      }
 
      ScaleBucket buckets[9];
@@ -214,7 +217,7 @@ int parse(char * pointer, int splits, int32_t ** gate_counts_ref, int32_t * radi
      }
 
      for (int i = 0; i < splits; i++) {
-          pthread_join(threads[i], NULL);
+          thrd_join(threads[i], NULL);
      }
      free(projectionData.calculate);
 
